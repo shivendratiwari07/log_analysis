@@ -24,8 +24,8 @@ logs_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/logs"
 print(f"Logs URL: {logs_url}")
 
 # Retry mechanism
-max_retries = 5
-retry_delay = 30  # seconds
+max_retries = 10
+retry_delay = 60  # seconds
 
 for attempt in range(max_retries):
     # Download logs
