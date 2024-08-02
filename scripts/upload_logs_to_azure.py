@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 from azure.storage.blob import BlobServiceClient
 
@@ -22,18 +23,28 @@ logs_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/logs"
 # Print the URL for debugging
 print(f"Logs URL: {logs_url}")
 
-# Download logs
-headers = {'Authorization': f'token {token}'}
-response = requests.get(logs_url, headers=headers)
+# Retry mechanism
+max_retries = 5
+retry_delay = 30  # seconds
 
-if response.status_code == 200:
-    logs_content = response.content
-elif response.status_code == 403:
-    raise Exception("Access denied. Ensure the GITHUB_TOKEN has the required permissions.")
-elif response.status_code == 404:
-    raise Exception("Logs not found. Ensure the GITHUB_REPOSITORY and GITHUB_RUN_ID are correct.")
-else:
-    raise Exception(f"Failed to download logs: {response.status_code} - {response.text}")
+for attempt in range(max_retries):
+    # Download logs
+    headers = {'Authorization': f'token {token}'}
+    response = requests.get(logs_url, headers=headers)
+
+    if response.status_code == 200:
+        logs_content = response.content
+        break
+    elif response.status_code == 403:
+        raise Exception("Access denied. Ensure the GITHUB_TOKEN has the required permissions.")
+    elif response.status_code == 404:
+        if attempt < max_retries - 1:
+            print(f"Logs not found, retrying in {retry_delay} seconds... (Attempt {attempt + 1}/{max_retries})")
+            time.sleep(retry_delay)
+        else:
+            raise Exception("Logs not found after multiple attempts. Ensure the GITHUB_REPOSITORY and GITHUB_RUN_ID are correct.")
+    else:
+        raise Exception(f"Failed to download logs: {response.status_code} - {response.text}")
 
 # Azure Blob Storage connection string
 connection_string = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
