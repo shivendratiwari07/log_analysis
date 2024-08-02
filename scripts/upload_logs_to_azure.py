@@ -7,7 +7,7 @@ account_name = "githubactions02"
 account_key = os.getenv('AZURE_STORAGE_KEY')
 container_name = "actionslogs"
 
-# GitHub environment variables for accessing logs
+## GitHub environment variables for accessing logs
 repo = os.getenv('GITHUB_REPOSITORY')
 run_id = os.getenv('GITHUB_RUN_ID')
 token = os.getenv('GITHUB_TOKEN')
