@@ -1,0 +1,38 @@
+import os
+import requests
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+
+# Azure Storage account details
+account_name = "githubactions02"
+account_key = "Pi4YdsrzE+cZNovk4FDCYeF3YiIGFQfks8EhaQUSO0EFB5JOiO9qDyNPiu7i2m+Ed5CIyt5zhgoz+AStrkqnIA=="  # Replace with your actual account key
+container_name = "actionslogs"
+
+# GitHub environment variables for accessing logs
+repo = os.getenv('GITHUB_REPOSITORY')
+run_id = os.getenv('GITHUB_RUN_ID')
+token = os.getenv('GITHUB_TOKEN')
+
+# GitHub API endpoint for workflow run logs
+logs_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/logs"
+
+# Download logs
+headers = {'Authorization': f'token {token}'}
+response = requests.get(logs_url, headers=headers)
+
+if response.status_code == 200:
+    logs_content = response.content
+else:
+    raise Exception(f"Failed to download logs: {response.status_code} - {response.text}")
+
+# Azure Blob Storage connection string
+connection_string = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
+blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+
+# Upload logs to Azure Blob Storage
+blob_client = blob_service_client.get_blob_client(container=container_name, blob=f'github_actions_logs_{run_id}.zip')
+
+try:
+    blob_client.upload_blob(logs_content, overwrite=True)
+    print("Logs uploaded successfully.")
+except Exception as e:
+    print(f"Failed to upload logs: {str(e)}")
