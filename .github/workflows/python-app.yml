@@ -81,4 +81,4 @@ jobs:
         AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
       run: |
         source myenv/bin/activate
-        python upload_logs_to_azure.py
+        python scripts/upload_logs_to_azure.py
