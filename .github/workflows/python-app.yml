@@ -173,7 +173,7 @@ jobs:
 
     - name: Upload logs to Azure
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PAT }}
         GITHUB_RUN_ID: ${{ github.run_id }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
