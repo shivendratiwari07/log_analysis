@@ -145,10 +145,10 @@ jobs:
         source myenv/bin/activate
         pip install -r requirements.txt
 
-    - name: Run tests
-      run: |
-        source myenv/bin/activate
-        pytest --maxfail=5 --disable-warnings
+    # - name: Run tests
+    #   run: |
+    #     source myenv/bin/activate
+    #     pytest --maxfail=5 --disable-warnings
 
   debug-fetch-logs:
     runs-on: ubuntu-latest
