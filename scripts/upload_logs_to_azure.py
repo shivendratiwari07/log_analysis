@@ -17,6 +17,11 @@ token = os.getenv('GITHUB_TOKEN')
 if not repo or not run_id or not token:
     raise Exception("GITHUB_REPOSITORY, GITHUB_RUN_ID, and GITHUB_TOKEN must be set")
 
+# Print the environment variables for debugging
+print(f"GITHUB_REPOSITORY: {repo}")
+print(f"GITHUB_RUN_ID: {run_id}")
+print(f"GITHUB_TOKEN: {'***' if token else 'MISSING'}")
+
 # GitHub API endpoint for workflow run logs
 logs_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/logs"
 
@@ -32,8 +37,12 @@ for attempt in range(max_retries):
     headers = {'Authorization': f'token {token}'}
     response = requests.get(logs_url, headers=headers)
 
+    print(f"Attempt {attempt + 1}/{max_retries}: HTTP Status Code: {response.status_code}")
+    print(f"Response Content: {response.content}")
+
     if response.status_code == 200:
         logs_content = response.content
+        print("Logs fetched successfully.")
         break
     elif response.status_code == 403:
         raise Exception("Access denied. Ensure the GITHUB_TOKEN has the required permissions.")
