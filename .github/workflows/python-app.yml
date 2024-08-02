@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+
 permissions:
   actions: read
   contents: read
@@ -14,16 +15,16 @@ permissions:
 jobs:
   # run-script:
   #   runs-on: ubuntu-latest
-    
+
   #   steps:
   #   - name: Checkout repository
   #     uses: actions/checkout@v2
-    
+
   #   - name: Set up Python 3.12
   #     uses: actions/setup-python@v4
   #     with:
   #       python-version: '3.12'
-    
+
   #   - name: Install dependencies
   #     run: |
   #       python -m venv myenv
@@ -37,16 +38,16 @@ jobs:
 
   build-and-test:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-    
+
     - name: Set up Python 3.12
       uses: actions/setup-python@v4
       with:
         python-version: '3.12'
-    
+
     - name: Install dependencies
       run: |
         python -m venv myenv
@@ -56,10 +57,11 @@ jobs:
     # - name: Run tests
     #   run: |
     #     source myenv/bin/activate
-    #     pytest
+    #     pytest --maxfail=5 --disable-warnings
+
   upload-logs:
     runs-on: ubuntu-latest
-    needs: [build-and-test]
+    needs: [ build-and-test]
 
     steps:
     - name: Checkout repository
