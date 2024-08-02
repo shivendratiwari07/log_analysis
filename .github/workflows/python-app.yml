@@ -1,4 +1,4 @@
-name: Run openai API connection Script
+name: CI Workflow
 
 on:
   push:
@@ -9,8 +9,31 @@ on:
       - main
 
 jobs:
-  run-script:
-    runs-on: [ubuntu-latest]
+  # run-script:
+  #   runs-on: ubuntu-latest
+    
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v2
+    
+  #   - name: Set up Python 3.12
+  #     uses: actions/setup-python@v4
+  #     with:
+  #       python-version: '3.12'
+    
+  #   - name: Install dependencies
+  #     run: |
+  #       python -m venv myenv
+  #       source myenv/bin/activate
+  #       pip install requests
+
+  #   - name: Run openai.py script
+  #     run: |
+  #       source myenv/bin/activate
+  #       python openai.py
+
+  run-flask:
+    runs-on: ubuntu-latest
     
     steps:
     - name: Checkout repository
@@ -25,9 +48,9 @@ jobs:
       run: |
         python -m venv myenv
         source myenv/bin/activate
-        pip install requests
+        pip install -r requirements.txt
 
-    - name: Run openai.py script
+    - name: Run Flask application
       run: |
         source myenv/bin/activate
-        python openai.py
+        python app.py
