@@ -1,0 +1,34 @@
+name: Logs Collection Workflow
+
+on:
+  repository_dispatch:
+    types: [collect-logs]
+
+jobs:
+  upload-logs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m venv myenv
+        source myenv/bin/activate
+        pip install requests azure-storage-blob
+
+    - name: Upload logs to Azure
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT }}  # Use the PAT instead of the default GITHUB_TOKEN
+        GITHUB_RUN_ID: ${{ github.event.client_payload.run_id }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+      run: |
+        source myenv/bin/activate
+        python scripts/upload_logs_to_azure.py
