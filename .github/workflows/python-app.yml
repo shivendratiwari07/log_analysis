@@ -150,9 +150,11 @@ jobs:
     #     source myenv/bin/activate
     #     pytest --maxfail=5 --disable-warnings
 
-  debug-fetch-logs:
+
+
+  upload-logs:
     runs-on: ubuntu-latest
-    needs: [run-script, build-and-test]
+    needs: [run-script]
 
     steps:
     - name: Checkout repository
@@ -167,13 +169,41 @@ jobs:
       run: |
         python -m venv myenv
         source myenv/bin/activate
-        pip install requests
+        pip install requests azure-storage-blob
 
-    - name: Debug Fetch Logs
+    - name: Upload logs to Azure
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_RUN_ID: ${{ github.run_id }}
         GITHUB_REPOSITORY: ${{ github.repository }}
+        AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
       run: |
         source myenv/bin/activate
-        python scripts/debug_fetch_logs.py
+        python scripts/upload_logs_to_azure.py
+  # debug-fetch-logs:
+  #   runs-on: ubuntu-latest
+  #   needs: [run-script, build-and-test]
+
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v2
+
+  #   - name: Set up Python 3.12
+  #     uses: actions/setup-python@v4
+  #     with:
+  #       python-version: '3.12'
+
+  #   - name: Install dependencies
+  #     run: |
+  #       python -m venv myenv
+  #       source myenv/bin/activate
+  #       pip install requests
+
+  #   - name: Debug Fetch Logs
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       GITHUB_RUN_ID: ${{ github.run_id }}
+  #       GITHUB_REPOSITORY: ${{ github.repository }}
+  #     run: |
+  #       source myenv/bin/activate
+  #       python scripts/debug_fetch_logs.py
