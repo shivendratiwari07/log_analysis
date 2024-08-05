@@ -42,21 +42,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
+      - name: Set up GitHub CLI
         run: |
-          python -m venv myenv
-          source myenv/bin/activate
-          pip install requests
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install gh
 
-      - name: Run openai.py script
-        run: |
-          source myenv/bin/activate
-          python openai.py
+      - name: Authenticate GitHub CLI
+        run: gh auth login --with-token <<< "${{ secrets.GH_TOKEN1 }}"
 
       - name: Create logs directory
         run: mkdir -p logs
@@ -65,13 +60,9 @@ jobs:
         id: list-runs
         run: |
           echo "Listing available runs for the repository..."
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN1 }}" \
-               -H "Accept: application/vnd.github.v3+json" \
-               -L \
-               https://api.github.com/repos/${{ github.repository }}/actions/runs \
-               | jq '.' > logs/runs.json
+          gh run list --repo ${{ github.repository }} --limit 1 --json databaseId > logs/runs.json
           cat logs/runs.json
-          RUN_ID=$(jq -r '.workflow_runs[0].id' logs/runs.json)
+          RUN_ID=$(jq -r '.[0].databaseId' logs/runs.json)
           echo "Selected run ID: $RUN_ID"
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
 
@@ -79,34 +70,20 @@ jobs:
         run: |
           mkdir -p logs
           echo "Downloading logs from GitHub API using run ID ${{ env.RUN_ID }}"
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN1 }}" \
-               -H "Accept: application/vnd.github.v3+json" \
-               -L -o logs/logs.zip \
-               https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ env.RUN_ID }}/logs
+          gh run view ${{ env.RUN_ID }} --log > logs/logs.log
           if [ $? -ne 0 ]; then
             echo "Failed to download logs"
-            cat logs/logs.zip
+            cat logs/logs.log
             exit 1
           fi
-          echo "Logs downloaded. Checking file type..."
-          file logs/logs.zip
-
-      - name: Extract Logs
-        run: |
-          if file logs/logs.zip | grep -q 'Zip archive data'; then
-            unzip -o logs/logs.zip -d logs/
-            echo "Unzipped files:"
-            ls logs/
-          else
-            echo "Downloaded file is not a zip archive"
-            cat logs/logs.zip
-          fi
+          echo "Logs downloaded."
+          cat logs/logs.log
 
       - name: Upload logs
         uses: actions/upload-artifact@v2
         with:
           name: workflow-logs
-          path: logs/
+          path: logs/logs.log
 
 
 
