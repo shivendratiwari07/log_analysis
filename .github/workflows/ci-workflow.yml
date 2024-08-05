@@ -53,9 +53,9 @@ jobs:
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
                -L https://api.github.com/repos/${{ github.repository }}/actions/runs \
-               | jq '.workflow_runs[] | {id, name, status, conclusion}' > logs/runs.json
-          cat logs/runs.json
-          RUN_ID=$(jq -r '.[0].id' logs/runs.json)
+               | jq '.' > logs/runs.log
+          cat logs/runs.log
+          RUN_ID=$(jq -r '.workflow_runs[0].id' logs/runs.log)
           echo "Selected run ID: $RUN_ID"
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
 
@@ -63,21 +63,20 @@ jobs:
         run: |
           echo "Downloading logs from GitHub API using run ID ${{ env.RUN_ID }}"
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
-               -L -o logs/logs.zip \
+               -L -o logs/logs.log \
                https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ env.RUN_ID }}/logs
           if [ $? -ne 0 ]; then
             echo "Failed to download logs"
-            cat logs/logs.zip
+            cat logs/logs.log
             exit 1
           fi
-          unzip -o logs/logs.zip -d logs/
-          echo "Logs downloaded and extracted."
+          echo "Logs downloaded."
 
       - name: Upload logs
         uses: actions/upload-artifact@v2
         with:
           name: workflow-logs
-          path: logs/
+          path: logs/logs.log
 
 
 
