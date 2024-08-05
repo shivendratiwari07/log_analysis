@@ -53,35 +53,19 @@ for attempt in range(max_retries):
 if run_data['status'] != 'completed':
     raise Exception("Run did not complete within the expected time frame.")
 
-# GitHub API endpoint for workflow run logs
-logs_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/logs"
-print(f"Logs URL: {logs_url}")
+# Download the logs using curl
+os.system(f"""
+curl -L \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: Bearer {token}" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  https://api.github.com/repos/{repo}/actions/runs/{run_id}/logs \
+  --output logs.zip
+""")
 
-# Check log availability with retry mechanism
-log_retries = 15
-log_retry_delay = 30  # seconds
-
-for log_attempt in range(log_retries):
-    headers = {'Authorization': f'token {token}'}
-    log_response = requests.get(logs_url, headers=headers)
-
-    print(f"Log Attempt {log_attempt + 1}/{log_retries}: HTTP Status Code: {log_response.status_code}")
-    if log_response.status_code != 200:
-        print(f"HTTP Status Code: {log_response.status_code}")
-        print(f"Response Headers: {log_response.headers}")
-        print(f"Response Content: {log_response.content}")
-    else:
-        logs_content = log_response.content
-        print("Logs fetched successfully.")
-        break
-    if log_response.status_code == 404:
-        if log_attempt < log_retries - 1:
-            print(f"Logs not available yet, retrying in {log_retry_delay} seconds... (Attempt {log_attempt + 1}/{log_retries})")
-            time.sleep(log_retry_delay)
-        else:
-            raise Exception("Logs not found after multiple attempts. Ensure the GITHUB_REPOSITORY and GITHUB_RUN_ID are correct.")
-    else:
-        raise Exception(f"Failed to download logs: {log_response.status_code} - {log_response.text}")
+# Verify the logs have been downloaded
+if not os.path.exists('logs.zip'):
+    raise Exception("Failed to download logs using curl.")
 
 # Azure Blob Storage connection string
 connection_string = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
@@ -91,7 +75,8 @@ blob_service_client = BlobServiceClient.from_connection_string(connection_string
 blob_client = blob_service_client.get_blob_client(container=container_name, blob=f'github_actions_logs_{run_id}.zip')
 
 try:
-    blob_client.upload_blob(logs_content, overwrite=True)
+    with open('logs.zip', 'rb') as log_file:
+        blob_client.upload_blob(log_file, overwrite=True)
     print("Logs uploaded successfully.")
 except Exception as e:
     print(f"Failed to upload logs: {str(e)}")
