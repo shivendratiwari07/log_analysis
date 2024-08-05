@@ -65,7 +65,7 @@ jobs:
         id: list-runs
         run: |
           echo "Listing available runs for the repository..."
-          curl -H "Authorization: token ${{ secrets.PAT }}" \
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN1 }}" \
                -H "Accept: application/vnd.github.v3+json" \
                -L \
                https://api.github.com/repos/${{ github.repository }}/actions/runs \
@@ -79,7 +79,7 @@ jobs:
         run: |
           mkdir -p logs
           echo "Downloading logs from GitHub API using run ID ${{ env.RUN_ID }}"
-          curl -H "Authorization: token ${{ secrets.PAT }}" \
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN1 }}" \
                -H "Accept: application/vnd.github.v3+json" \
                -L -o logs/logs.zip \
                https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ env.RUN_ID }}/logs
