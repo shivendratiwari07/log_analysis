@@ -17,50 +17,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
 
-    - name: Install dependencies
-      run: |
-        python -m venv myenv
-        source myenv/bin/activate
-        pip install requests
+      - name: Install dependencies
+        run: |
+          python -m venv myenv
+          source myenv/bin/activate
+          pip install requests
 
-    - name: Run openai.py script
-      run: |
-        source myenv/bin/activate
-        python openai.py
+      - name: Run openai.py script
+        run: |
+          source myenv/bin/activate
+          python openai.py
 
   logs-download:
     name: Download GH action logs
     runs-on: ubuntu-latest
     needs: run-script
     steps:
-      - uses: actions/checkout@v2.0.0
-      - name: Download Logs
+      - name: Checkout repository
+        uses: actions/checkout@v2.0.0
+
+      - name: Download and extract logs
         run: |
           mkdir -p logs
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
                -L -o logs/logs.zip \
                https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/logs
-          if file logs/logs.zip | grep -q 'Zip archive data'; then
-            unzip logs/logs.zip -d logs/
-            rm logs/logs.zip
-          else
-            echo "Downloaded file is not a zip archive"
-            cat logs/logs.zip
-          fi
+          unzip logs/logs.zip -d logs/ || echo "No logs to unzip"
+          ls logs
+
       - name: Upload logs
         uses: actions/upload-artifact@v2
         with:
           name: workflow-logs
           path: logs/
+
 
 
 
