@@ -51,7 +51,7 @@ jobs:
           sudo apt install gh
 
       - name: Authenticate GitHub CLI
-        run: gh auth login --with-token <<< "${{ secrets.GH_TOKEN1 }}"
+        run: gh auth login --with-token <<< "${{ secrets.GH_TOKEN }}"
 
       - name: Create logs directory
         run: mkdir -p logs
@@ -65,6 +65,24 @@ jobs:
           RUN_ID=$(jq -r '.[0].databaseId' logs/runs.json)
           echo "Selected run ID: $RUN_ID"
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+
+      - name: Wait for Run Completion
+        run: |
+          for i in {1..10}
+          do
+            STATUS=$(gh run view ${{ env.RUN_ID }} --json status --jq '.status')
+            echo "Current run status: $STATUS"
+            if [ "$STATUS" == "completed" ]; then
+              echo "Run completed."
+              break
+            fi
+            echo "Run not completed yet. Waiting..."
+            sleep 30
+          done
+          if [ "$STATUS" != "completed" ]; then
+            echo "Run did not complete in time."
+            exit 1
+          fi
 
       - name: Download Logs
         run: |
@@ -84,7 +102,6 @@ jobs:
         with:
           name: workflow-logs
           path: logs/logs.log
-
 
 
 
