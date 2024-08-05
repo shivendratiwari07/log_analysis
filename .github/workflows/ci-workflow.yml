@@ -36,22 +36,12 @@ jobs:
           source myenv/bin/activate
           python openai.py
 #tt
-  list-and-download-logs:
+  download-logs:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Set up GitHub CLI
-        run: |
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          sudo apt update
-          sudo apt install gh
-
-      - name: Authenticate GitHub CLI
-        run: gh auth login --with-token <<< "${{ secrets.GH_TOKEN }}"
 
       - name: Create logs directory
         run: mkdir -p logs
@@ -60,48 +50,34 @@ jobs:
         id: list-runs
         run: |
           echo "Listing available runs for the repository..."
-          gh run list --repo ${{ github.repository }} --limit 1 --json databaseId > logs/runs.json
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               -L https://api.github.com/repos/${{ github.repository }}/actions/runs \
+               | jq '.workflow_runs[] | {id, name, status, conclusion}' > logs/runs.json
           cat logs/runs.json
-          RUN_ID=$(jq -r '.[0].databaseId' logs/runs.json)
+          RUN_ID=$(jq -r '.[0].id' logs/runs.json)
           echo "Selected run ID: $RUN_ID"
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
 
-      - name: Wait for Run Completion
-        run: |
-          for i in {1..10}
-          do
-            STATUS=$(gh run view ${{ env.RUN_ID }} --json status --jq '.status')
-            echo "Current run status: $STATUS"
-            if [ "$STATUS" == "completed" ]; then
-              echo "Run completed."
-              break
-            fi
-            echo "Run not completed yet. Waiting..."
-            sleep 30
-          done
-          if [ "$STATUS" != "completed" ]; then
-            echo "Run did not complete in time."
-            exit 1
-          fi
-
       - name: Download Logs
         run: |
-          mkdir -p logs
           echo "Downloading logs from GitHub API using run ID ${{ env.RUN_ID }}"
-          gh run view ${{ env.RUN_ID }} --log > logs/logs.log
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+               -L -o logs/logs.zip \
+               https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ env.RUN_ID }}/logs
           if [ $? -ne 0 ]; then
             echo "Failed to download logs"
-            cat logs/logs.log
+            cat logs/logs.zip
             exit 1
           fi
-          echo "Logs downloaded."
-          cat logs/logs.log
+          unzip -o logs/logs.zip -d logs/
+          echo "Logs downloaded and extracted."
 
       - name: Upload logs
         uses: actions/upload-artifact@v2
         with:
           name: workflow-logs
-          path: logs/logs.log
+          path: logs/
 
 
 
