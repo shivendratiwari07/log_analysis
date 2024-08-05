@@ -48,12 +48,14 @@ jobs:
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
                https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/logs \
-               -o logs/logs.zip
+               -L -o logs/logs.zip
+          unzip logs/logs.zip -d logs/
+          rm logs/logs.zip
       - name: Upload logs
         uses: actions/upload-artifact@v2
         with:
           name: workflow-logs
-          path: logs/logs.zip
+          path: logs/
 
 
 
