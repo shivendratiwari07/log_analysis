@@ -58,6 +58,9 @@ jobs:
           source myenv/bin/activate
           python openai.py
 
+      - name: Create logs directory
+        run: mkdir -p logs
+
       - name: List Available Runs
         id: list-runs
         run: |
