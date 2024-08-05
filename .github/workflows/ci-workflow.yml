@@ -36,31 +36,50 @@ jobs:
           source myenv/bin/activate
           python openai.py
 
-  logs-download:
-    name: Download GH action logs
+  list-and-download-logs:
     runs-on: ubuntu-latest
-    needs: run-script
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2.0.0
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m venv myenv
+          source myenv/bin/activate
+          pip install requests
+
+      - name: Run openai.py script
+        run: |
+          source myenv/bin/activate
+          python openai.py
 
       - name: List Available Runs
+        id: list-runs
         run: |
           echo "Listing available runs for the repository..."
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
                -L \
                https://api.github.com/repos/${{ github.repository }}/actions/runs \
-               | jq '.workflow_runs[] | {id, name, status, conclusion}'
+               | jq '.workflow_runs[] | {id, name, status, conclusion}' > logs/runs.json
+          cat logs/runs.json
+          RUN_ID=$(cat logs/runs.json | jq -r '.[0].id')
+          echo "Selected run ID: $RUN_ID"
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
 
       - name: Download Logs
         run: |
           mkdir -p logs
-          echo "Downloading logs from GitHub API"
+          echo "Downloading logs from GitHub API using run ID ${{ env.RUN_ID }}"
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
                -L -o logs/logs.json \
-               https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/logs
+               https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ env.RUN_ID }}/logs
           echo "Logs downloaded. Checking file type..."
           file logs/logs.json
           echo "Contents of logs.json:"
