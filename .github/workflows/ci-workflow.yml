@@ -16,7 +16,6 @@ permissions:
 
 jobs:
   run-script:
-   # if: github.event_name != 'repository_dispatch'
     runs-on: ubuntu-latest
 
     steps:
@@ -38,7 +37,6 @@ jobs:
         run: |
           source myenv/bin/activate
           python openai.py
-
 
   upload-logs:
     needs: run-script
@@ -74,6 +72,7 @@ jobs:
         run: |
           source myenv/bin/activate
           python scripts/debug_fetch_logs.py
+
 #python scripts/upload_logs_to_azure.py
 
       # - name: Download Logs

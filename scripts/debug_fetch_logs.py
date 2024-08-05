@@ -30,20 +30,11 @@ curl -L \
   --output logs.zip
 """)
 
-
-# os.system(f"""
-
-# curl -L \
-#   -H "Accept: application/vnd.github+json" \
-#   -H "Authorization: Bearer {token}" \
-#   -H "X-GitHub-Api-Version: 2022-11-28" \
-#   https://api.github.com/repos/shivendratiwari07/log_analysis/actions/runs/10247596535/logs \
-#   --output logs.zip
-# """)
-
 # Verify the logs have been downloaded
 if not os.path.exists('logs.zip'):
     raise Exception("Failed to download logs using curl.")
+
+print("Logs downloaded successfully. Uploading to Azure...")
 
 # Azure Blob Storage connection string
 connection_string = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
