@@ -1,5 +1,11 @@
 import os
 import requests
+from azure.storage.blob import BlobServiceClient
+
+# Azure Storage account details
+account_name = "githubactions02"
+account_key = os.getenv('AZURE_STORAGE_KEY')
+container_name = "actionslogs"
 
 # GitHub environment variables for accessing logs
 repo = os.getenv('GITHUB_REPOSITORY')
@@ -10,24 +16,34 @@ token = os.getenv('GITHUB_TOKEN')
 if not repo or not run_id or not token:
     raise Exception("GITHUB_REPOSITORY, GITHUB_RUN_ID, and GITHUB_TOKEN must be set")
 
-# GitHub API endpoint for workflow run logs
-logs_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/logs"
+print(f"GITHUB_REPOSITORY: {repo}")
+print(f"GITHUB_RUN_ID: {run_id}")
+print(f"GITHUB_TOKEN: {'***' if token else 'MISSING'}")
 
-# Print the URL for debugging
-print(f"Logs URL: {logs_url}")
+# Download the logs using curl
+os.system(f"""
+curl -L \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: Bearer {token}" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  https://api.github.com/repos/{repo}/actions/runs/{run_id}/logs \
+  --output logs.zip
+""")
 
-# Download logs
-headers = {'Authorization': f'token {token}'}
-response = requests.get(logs_url, headers=headers)
+# Verify the logs have been downloaded
+if not os.path.exists('logs.zip'):
+    raise Exception("Failed to download logs using curl.")
 
-print(f"HTTP Status Code: {response.status_code}")
-print(f"Response Content: {response.content}")
+# Azure Blob Storage connection string
+connection_string = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
+blob_service_client = BlobServiceClient.from_connection_string(connection_string)
 
-if response.status_code == 200:
-    print("Logs fetched successfully.")
-elif response.status_code == 403:
-    print("Access denied. Ensure the GITHUB_TOKEN has the required permissions.")
-elif response.status_code == 404:
-    print("Logs not found. Ensure the GITHUB_REPOSITORY and GITHUB_RUN_ID are correct.")
-else:
-    print(f"Failed to download logs: {response.status_code} - {response.text}")
+# Upload logs to Azure Blob Storage
+blob_client = blob_service_client.get_blob_client(container=container_name, blob=f'github_actions_logs_{run_id}.zip')
+
+try:
+    with open('logs.zip', 'rb') as log_file:
+        blob_client.upload_blob(log_file, overwrite=True)
+    print("Logs uploaded successfully.")
+except Exception as e:
+    print(f"Failed to upload logs: {str(e)}")
