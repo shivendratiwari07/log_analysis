@@ -112,7 +112,10 @@ try:
 except zipfile.BadZipFile:
     print("File is not a valid zip file. Checking content...")
     with open('logs.zip', 'r') as log_file:
-        print(log_file.read())
+        content = log_file.read()
+        print(content)
+        if "message" in content and "status" in content:
+            print("GitHub API response:", content)
     raise
 
 # Azure Blob Storage connection string
