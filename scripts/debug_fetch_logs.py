@@ -8,31 +8,29 @@ account_key = os.getenv('AZURE_STORAGE_KEY')
 container_name = "actionslogs"
 
 # GitHub environment variables for accessing logs
-repo = os.getenv('GITHUB_REPOSITORY')
+repo_owner = os.getenv('REPO_OWNER')
+repo_name = os.getenv('REPO_NAME')
 run_id = os.getenv('GITHUB_RUN_ID')
 token = os.getenv('GITHUB_TOKEN')
 
 # Verify that environment variables are set
-if not repo or not run_id or not token:
-    raise Exception("GITHUB_REPOSITORY, GITHUB_RUN_ID, and GITHUB_TOKEN must be set")
+if not repo_owner or not repo_name or not run_id or not token:
+    raise Exception("REPO_OWNER, REPO_NAME, GITHUB_RUN_ID, and GITHUB_TOKEN must be set")
 
-print(f"GITHUB_REPOSITORY: {repo}")
+print(f"REPO_OWNER: {repo_owner}")
+print(f"REPO_NAME: {repo_name}")
 print(f"GITHUB_RUN_ID: {run_id}")
 print(f"GITHUB_TOKEN: {'***' if token else 'MISSING'}")
 
-# Debug print the curl command
-curl_command = f"""
+# Download the logs using curl
+os.system(f"""
 curl -L \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer {token}" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
-  https://api.github.com/repos/{repo}/actions/runs/{run_id}/logs \
+  https://api.github.com/repos/{repo_owner}/{repo_name}/actions/runs/{run_id}/logs \
   --output logs.zip
-"""
-print(f"Running command: {curl_command}")
-
-# Download the logs using curl
-os.system(curl_command)
+""")
 
 # Verify the logs have been downloaded
 if not os.path.exists('logs.zip'):
