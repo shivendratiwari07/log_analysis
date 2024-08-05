@@ -64,7 +64,7 @@ jobs:
           echo "Downloading logs from GitHub API using run ID ${{ env.RUN_ID }}"
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
                -L -o logs/logs.log \
-               https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ env.RUN_ID }}/logs
+               https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ env.RUN_ID }}/log
           if [ $? -ne 0 ]; then
             echo "Failed to download logs"
             cat logs/logs.log
