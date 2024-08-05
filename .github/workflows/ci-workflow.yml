@@ -54,17 +54,19 @@ jobs:
                https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/logs
           echo "Logs downloaded. Checking file type..."
           file logs/logs.zip
+          echo "Extracting logs..."
+          unzip -o logs/logs.zip -d logs/
+          echo "Log files:"
+          ls -la logs/
 
-      - name: Extract and verify logs
+      - name: Verify Log Contents
         run: |
-          if file logs/logs.zip | grep -q 'Zip archive data'; then
-            echo "Unzipping logs..."
-            unzip -o logs/logs.zip -d logs/
-            echo "Unzipped files:"
-            ls logs/
+          echo "Verifying log contents..."
+          if [ -d logs ]; then
+            echo "Contents of logs directory:"
+            find logs -type f -exec sh -c 'echo "File: {}"; head -n 20 {}' \;
           else
-            echo "Downloaded file is not a zip archive"
-            cat logs/logs.zip
+            echo "No logs directory found."
           fi
 
       - name: Upload logs
