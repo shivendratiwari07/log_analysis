@@ -17,7 +17,7 @@ payload = {
             "content": [
                 {
                     "type": "text",
-                    "text": "What is AI?"
+                    "text": "What is ML?"
                 }
             ]
         }

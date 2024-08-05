@@ -59,6 +59,12 @@ jobs:
           source myenv/bin/activate
           pip install requests azure-storage-blob
 
+      - name: Debug environment variables
+        run: |
+          echo "GITHUB_REPOSITORY: ${{ github.repository }}"
+          echo "GITHUB_RUN_ID: ${{ github.run_id }}"
+          echo "GITHUB_TOKEN: ***"
+
       - name: Upload logs to Azure
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
