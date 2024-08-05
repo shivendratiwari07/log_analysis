@@ -47,10 +47,15 @@ jobs:
           mkdir -p logs
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
-               https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/logs \
-               -L -o logs/logs.zip
-          unzip logs/logs.zip -d logs/
-          rm logs/logs.zip
+               -L -o logs/logs.zip \
+               https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/logs
+          if file logs/logs.zip | grep -q 'Zip archive data'; then
+            unzip logs/logs.zip -d logs/
+            rm logs/logs.zip
+          else
+            echo "Downloaded file is not a zip archive"
+            cat logs/logs.zip
+          fi
       - name: Upload logs
         uses: actions/upload-artifact@v2
         with:
