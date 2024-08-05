@@ -44,6 +44,31 @@ jobs:
         client-payload: '{"run_id": "${{ github.run_id }}"}'
 
 
+jobs:
+  logs-download:
+    name: Download GH action logs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2.0.0
+      - name: Download Logs
+        uses: pawanbahuguna/action-logs@v1.0.1
+        env: 
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+      - name: Save logs to file
+        run: |
+          mkdir -p logs
+          echo "$GITHUB_RUN_ID" > logs/run_id.txt
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/logs \
+               -o logs/logs.zip
+      - name: Upload logs
+        uses: actions/upload-artifact@v2
+        with:
+          name: workflow-logs
+          path: logs/logs.zip
+
 
 
 # name: CI Workflow
