@@ -36,12 +36,12 @@ jobs:
         source myenv/bin/activate
         python openai.py
 
-    - name: Trigger Logs Collection Workflow
-      uses: peter-evans/repository-dispatch@v1
-      with:
-        token: ${{ secrets.PAT }}  # Use a PAT with repo scope
-        event-type: collect-logs
-        client-payload: '{"run_id": "${{ github.run_id }}"}'
+    # - name: Trigger Logs Collection Workflow
+    #   uses: peter-evans/repository-dispatch@v1
+    #   with:
+    #     token: ${{ secrets.PAT }}  # Use a PAT with repo scope
+    #     event-type: collect-logs
+    #     client-payload: '{"run_id": "${{ github.run_id }}"}'
 
 
 jobs:
