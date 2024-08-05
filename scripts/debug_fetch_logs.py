@@ -104,19 +104,19 @@ if file_size == 0:
 print(f"Logs.zip file size: {file_size} bytes")
 
 # Check if file is a valid zip file
-try:
-    with zipfile.ZipFile('logs.zip', 'r') as zip_ref:
-        zip_ref.extractall('logs')
-        extracted_files = zip_ref.namelist()
-        print(f"Extracted files: {extracted_files}")
-except zipfile.BadZipFile:
-    print("File is not a valid zip file. Checking content...")
-    with open('logs.zip', 'r') as log_file:
-        content = log_file.read()
-        print(content)
-        if "message" in content and "status" in content:
-            print("GitHub API response:", content)
-    raise
+# try:
+#     with zipfile.ZipFile('logs.zip', 'r') as zip_ref:
+#         zip_ref.extractall('logs')
+#         extracted_files = zip_ref.namelist()
+#         print(f"Extracted files: {extracted_files}")
+# except zipfile.BadZipFile:
+#     print("File is not a valid zip file. Checking content...")
+#     with open('logs.zip', 'r') as log_file:
+#         content = log_file.read()
+#         print(content)
+#         if "message" in content and "status" in content:
+#             print("GitHub API response:", content)
+#     raise
 
 # Azure Blob Storage connection string
 connection_string = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
