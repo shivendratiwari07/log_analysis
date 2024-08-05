@@ -20,15 +20,19 @@ print(f"GITHUB_REPOSITORY: {repo}")
 print(f"GITHUB_RUN_ID: {run_id}")
 print(f"GITHUB_TOKEN: {'***' if token else 'MISSING'}")
 
-# Download the logs using curl
-os.system(f"""
+# Debug print the curl command
+curl_command = f"""
 curl -L \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer {token}" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   https://api.github.com/repos/{repo}/actions/runs/{run_id}/logs \
   --output logs.zip
-""")
+"""
+print(f"Running command: {curl_command}")
+
+# Download the logs using curl
+os.system(curl_command)
 
 # Verify the logs have been downloaded
 if not os.path.exists('logs.zip'):
