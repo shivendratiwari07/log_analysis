@@ -21,12 +21,23 @@ print(f"GITHUB_RUN_ID: {run_id}")
 print(f"GITHUB_TOKEN: {'***' if token else 'MISSING'}")
 
 # Download the logs using curl
+# os.system(f"""
+# curl -L \
+#   -H "Accept: application/vnd.github+json" \
+#   -H "Authorization: Bearer {token}" \
+#   -H "X-GitHub-Api-Version: 2022-11-28" \
+#   https://api.github.com/repos/{repo}/actions/runs/{run_id}/logs \
+#   --output logs.zip
+# """)
+
+
 os.system(f"""
+
 curl -L \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer {token}" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
-  https://api.github.com/repos/{repo}/actions/runs/{run_id}/logs \
+  https://api.github.com/repos/shivendratiwari07/log_analysis/actions/runs/10247596535/logs \
   --output logs.zip
 """)
 
