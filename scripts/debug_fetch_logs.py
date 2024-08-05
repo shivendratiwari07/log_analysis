@@ -23,20 +23,36 @@ print(f"GITHUB_RUN_ID: {run_id}")
 print(f"GITHUB_TOKEN: {'***' if token else 'MISSING'}")
 
 # Download the logs using curl
-os.system(f"""
+curl_command = f"""
 curl -L \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer {token}" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   https://api.github.com/repos/{repo_owner}/{repo_name}/actions/runs/{run_id}/logs \
   --output logs.zip
-""")
+"""
+print(f"Running command: {curl_command}")
+os.system(curl_command)
 
 # Verify the logs have been downloaded
 if not os.path.exists('logs.zip'):
     raise Exception("Failed to download logs using curl.")
 
-print("Logs downloaded successfully. Uploading to Azure...")
+print("Logs downloaded successfully. Checking file content...")
+
+# Check file size
+file_size = os.path.getsize('logs.zip')
+if file_size == 0:
+    raise Exception("Downloaded logs file is empty.")
+
+print(f"Logs.zip file size: {file_size} bytes")
+
+# Check the content of the zip file
+import zipfile
+with zipfile.ZipFile('logs.zip', 'r') as zip_ref:
+    zip_ref.extractall('logs')
+    extracted_files = zip_ref.namelist()
+    print(f"Extracted files: {extracted_files}")
 
 # Azure Blob Storage connection string
 connection_string = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
