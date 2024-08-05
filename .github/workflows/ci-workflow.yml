@@ -55,6 +55,11 @@ jobs:
           else
             echo "Downloaded file is not a zip archive"
             cat logs/logs.zip
+      - name: Check and extract nested zip
+        run: |
+          if [ -f logs/logs.zip ]; then
+            unzip logs/logs.zip -d logs/
+            rm logs/logs.zip
           fi
       - name: Upload logs
         uses: actions/upload-artifact@v2
