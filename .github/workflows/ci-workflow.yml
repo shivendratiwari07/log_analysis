@@ -44,7 +44,7 @@ jobs:
     #     client-payload: '{"run_id": "${{ github.run_id }}"}'
 
 
-jobs:
+
   logs-download:
     name: Download GH action logs
     runs-on: ubuntu-latest
