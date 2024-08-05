@@ -50,24 +50,17 @@ jobs:
           echo "Downloading logs from GitHub API"
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
-               -L -o logs/logs.zip \
+               -L -o logs/logs.json \
                https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/logs
           echo "Logs downloaded. Checking file type..."
-          file logs/logs.zip
-          echo "Extracting logs..."
-          unzip -o logs/logs.zip -d logs/
-          echo "Log files:"
-          ls -la logs/
+          file logs/logs.json
 
-      - name: Verify Log Contents
+      - name: Extract Logs from JSON
         run: |
-          echo "Verifying log contents..."
-          if [ -d logs ]; then
-            echo "Contents of logs directory:"
-            find logs -type f -exec sh -c 'echo "File: {}"; head -n 20 {}' \;
-          else
-            echo "No logs directory found."
-          fi
+          echo "Extracting log entries from JSON..."
+          cat logs/logs.json | jq '.log_entries[]' > logs/extracted_logs.txt
+          echo "Log entries extracted:"
+          cat logs/extracted_logs.txt
 
       - name: Upload logs
         uses: actions/upload-artifact@v2
