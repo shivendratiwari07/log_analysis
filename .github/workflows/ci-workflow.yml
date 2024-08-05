@@ -60,19 +60,14 @@ jobs:
           echo "Selected run ID: $RUN_ID"
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
 
-      - name: Verify Run ID
-        run: |
-          echo "Verifying run ID ${{ env.RUN_ID }}"
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN1 }}" \
-               -H "Accept: application/vnd.github.v3+json" \
-               -L https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ env.RUN_ID }} \
-               | jq '.'
-      
       - name: Download Logs
         run: |
           echo "Downloading logs from GitHub API using run ID ${{ env.RUN_ID }}"
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN1 }}" \
-               -L -o logs/logs.log \
+          curl -L \
+               -H "Accept: application/vnd.github+json" \
+               -H "Authorization: Bearer ${{ secrets.GH_TOKEN1 }}" \
+               -H "X-GitHub-Api-Version: 2022-11-28" \
+               -o logs/logs.log \
                https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ env.RUN_ID }}/logs
           if [ $? -ne 0 ]; then
             echo "Failed to download logs"
@@ -87,7 +82,6 @@ jobs:
         with:
           name: workflow-logs
           path: logs/logs.log
-
 
 
 
