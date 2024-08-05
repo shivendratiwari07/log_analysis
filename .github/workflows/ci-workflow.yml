@@ -53,6 +53,11 @@ jobs:
                https://api.github.com/repos/${{ github.repository }}/actions/runs \
                | jq '.workflow_runs[] | {id, name, status, conclusion}'
 
+      - name: Debug Run ID and Repository
+        run: |
+          echo "Run ID: ${{ github.run_id }}"
+          echo "Repository: ${{ github.repository }}"
+
       - name: Download Logs
         run: |
           mkdir -p logs
@@ -60,7 +65,8 @@ jobs:
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
                -L -o logs/logs.zip \
-               https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/logs
+               https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/logs \
+               || echo "Failed to download logs"
           echo "Logs downloaded. Checking file type..."
           file logs/logs.zip
           echo "Contents of logs.zip:"
