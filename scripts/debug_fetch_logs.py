@@ -55,6 +55,7 @@
 
 import os
 import requests
+import zipfile  # Import the zipfile module
 from azure.storage.blob import BlobServiceClient
 
 # Azure Storage account details
