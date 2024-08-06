@@ -47,6 +47,10 @@ jobs:
           echo "REPO_OWNER: ${{ github.repository_owner }}"
           echo "REPO_NAME: ${{ github.event.repository.name }}"
 
+      - name: Verify GITHUB_RUN_ID before script
+        run: |
+          echo "Using GITHUB_RUN_ID: ${{ env.GITHUB_RUN_ID }}"
+
       - name: Upload logs to Azure
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
