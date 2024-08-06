@@ -35,8 +35,9 @@ jobs:
       - name: Read GITHUB_RUN_ID from file
         id: read-run-id
         run: |
-          echo "GITHUB_RUN_ID=$(cat run_id.txt)" >> $GITHUB_ENV
-          cat run_id.txt
+          GITHUB_RUN_ID=$(cat run_id.txt)
+          echo "GITHUB_RUN_ID=${GITHUB_RUN_ID}" >> $GITHUB_ENV
+          echo "Run ID from file: ${GITHUB_RUN_ID}"
 
       - name: Debug environment variables
         run: |
