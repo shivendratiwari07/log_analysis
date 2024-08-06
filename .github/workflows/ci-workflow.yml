@@ -43,10 +43,16 @@ jobs:
           name: run-id
           path: run_id.txt
 
+      - name: Verify artifact upload (debug step)
+        run: |
+          echo "Artifact uploaded: run-id"
+          ls -la run_id.txt
+
       - name: Run openai.py script
         run: |
           source myenv/bin/activate
           python openai.py
+
 
 
 

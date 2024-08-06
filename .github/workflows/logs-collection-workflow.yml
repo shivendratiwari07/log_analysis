@@ -7,8 +7,8 @@ on:
       - completed
 
 permissions:
-  actions: write
-  contents: write
+  actions: read
+  contents: read
 
 jobs:
   collect-logs:
@@ -28,6 +28,17 @@ jobs:
           python -m venv myenv
           source myenv/bin/activate
           pip install requests azure-storage-blob
+
+      - name: List available artifacts (debug step)
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const artifacts = await github.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+            });
+            console.log("Available artifacts:", artifacts);
 
       - name: Download GITHUB_RUN_ID artifact
         uses: actions/download-artifact@v3
