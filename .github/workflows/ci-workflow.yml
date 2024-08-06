@@ -34,27 +34,22 @@ jobs:
       - name: Save GITHUB_RUN_ID to a file
         run: echo "${{ github.run_id }}" > run_id.txt
 
-      - name: List files in workspace (before upload)
+      - name: List files in workspace (before commit)
         run: ls -la
 
-      - name: Show content of run_id.txt (before upload)
-        run: cat run_id.txt
-
-      - name: Upload GITHUB_RUN_ID artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: run-id
-          path: run_id.txt
-
-      - name: Verify artifact upload (debug step)
+      - name: Commit GITHUB_RUN_ID file
         run: |
-          echo "Artifact uploaded: run-id"
-          ls -la run_id.txt
-
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+          git add run_id.txt
+          git commit -m "Add GITHUB_RUN_ID"
+          git push
+          
       - name: Run openai.py script
         run: |
           source myenv/bin/activate
           python openai.py
+
 
 
 
