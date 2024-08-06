@@ -32,33 +32,16 @@ jobs:
       - name: List files in workspace (after checkout)
         run: ls -la
 
-      - name: Read GITHUB_RUN_ID from file
-        id: read-run-id
-        run: |
-          GITHUB_RUN_ID=$(cat run_id.txt)
-          echo "GITHUB_RUN_ID=${GITHUB_RUN_ID}" >> $GITHUB_ENV
-          echo "Run ID from file: ${GITHUB_RUN_ID}"
-
-      - name: Debug environment variables
-        run: |
-          echo "GITHUB_REPOSITORY: ${{ github.repository }}"
-          echo "GITHUB_RUN_ID: ${{ env.GITHUB_RUN_ID }}"
-          echo "GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
-          echo "REPO_OWNER: ${{ github.repository_owner }}"
-          echo "REPO_NAME: ${{ github.event.repository.name }}"
-
-      - name: Verify GITHUB_RUN_ID before script
-        run: |
-          echo "Using GITHUB_RUN_ID: ${{ env.GITHUB_RUN_ID }}"
+      - name: Verify run_id.txt content
+        run: cat run_id.txt
 
       - name: Upload logs to Azure
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_RUN_ID: ${{ env.GITHUB_RUN_ID }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           REPO_OWNER: ${{ github.repository_owner }}
           REPO_NAME: ${{ github.event.repository.name }}
           AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
         run: |
           source myenv/bin/activate
-          python scripts/debug_fetch_logs.py
+          python scripts/debug_fetch_logs.py run_id.txt

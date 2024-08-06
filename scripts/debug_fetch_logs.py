@@ -146,6 +146,7 @@
 
 
 import os
+import sys
 import requests
 from azure.storage.blob import BlobServiceClient
 
@@ -190,7 +191,11 @@ def upload_logs_to_azure(blob_service_client, container_name, blob_name, file_pa
         print(f"Failed to upload logs: {str(e)}")
     return False
 
-def main():
+def main(run_id_file):
+    # Read the GITHUB_RUN_ID from the provided file
+    with open(run_id_file, 'r') as file:
+        run_id = file.read().strip()
+
     # Azure Storage account details
     account_name = "githubactions02"
     account_key = os.getenv('AZURE_STORAGE_KEY')
@@ -199,7 +204,6 @@ def main():
     # GitHub environment variables for accessing logs
     repo_owner = os.getenv('REPO_OWNER')
     repo_name = os.getenv('REPO_NAME')
-    run_id = os.getenv('GITHUB_RUN_ID')
     token = os.getenv('GITHUB_TOKEN')
 
     # Verify that environment variables are set
@@ -247,4 +251,7 @@ def main():
         return
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 2:
+        print("Usage: python debug_fetch_logs.py <run_id_file>")
+        sys.exit(1)
+    main(sys.argv[1])
