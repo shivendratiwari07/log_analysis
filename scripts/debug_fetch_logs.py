@@ -147,7 +147,7 @@
 
 import os
 import requests
-import zipfile
+
 from azure.storage.blob import BlobServiceClient
 
 def main():
@@ -171,30 +171,40 @@ def main():
     print(f"GITHUB_RUN_ID: {run_id}")
     # Mask token print for security
     print(f"GITHUB_TOKEN: {'***' if token else 'MISSING'}")
-    
+
     print(f"Environment REPO_OWNER: {os.getenv('REPO_OWNER')}")
     print(f"Environment REPO_NAME: {os.getenv('REPO_NAME')}")
     print(f"Environment GITHUB_RUN_ID: {os.getenv('GITHUB_RUN_ID')}")
     print(f"Environment GITHUB_TOKEN: {'***' if token else 'MISSING'}")
 
     print("#####################################################################")
-    print(f"https://api.github.com/repos/{repo_owner}/{repo_name}/actions/runs/{run_id}/logs")
+    logs_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/actions/runs/{run_id}/logs"
+    print(f"Logs URL: {logs_url}")
 
-    # Download the logs using curl
-    curl_command = f"""
-    curl -L \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer {token}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    https://api.github.com/repos/{repo_owner}/{repo_name}/actions/runs/{run_id}/logs \
-    --output logs.zip
-    """
-    print(f"Running command: {curl_command}")
-    os.system(curl_command)
+    # Set the headers for the API request
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {token}",
+        "X-GitHub-Api-Version": "2022-11-28"
+    }
+
+    # Download the logs using requests
+    try:
+        response = requests.get(logs_url, headers=headers)
+        response.raise_for_status()
+        with open('logs.zip', 'wb') as f:
+            f.write(response.content)
+        print("Logs downloaded successfully.")
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+        print(f"Response content: {response.content.decode('utf-8')}")
+    except Exception as err:
+        print(f"Other error occurred: {err}")
+        raise
 
     # Verify the logs have been downloaded
     if not os.path.exists('logs.zip'):
-        raise Exception("Failed to download logs using curl.")
+        raise Exception("Failed to download logs using requests.")
     print("Logs downloaded successfully. Checking file content...")
 
     # Check file size
