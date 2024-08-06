@@ -80,6 +80,7 @@ jobs:
         run: |
           source myenv/bin/activate
           python scripts/debug_fetch_logs.py
+          python scripts/list_workflow_runs.py
 
 
 
