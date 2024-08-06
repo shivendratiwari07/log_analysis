@@ -78,6 +78,11 @@ print(f"REPO_NAME: {repo_name}")
 print(f"GITHUB_RUN_ID: {run_id}")
 print(f"GITHUB_TOKEN: {token}")
 # print(f"GITHUB_TOKEN: {'***' if token else 'MISSING'}")
+print(f"Environment REPO_OWNER: {os.getenv('REPO_OWNER')}")
+print(f"Environment REPO_NAME: {os.getenv('REPO_NAME')}")
+print(f"Environment GITHUB_RUN_ID: {os.getenv('GITHUB_RUN_ID')}")
+print(f"Environment GITHUB_TOKEN: {os.getenv('GITHUB_TOKEN')}")
+
 
 print("#####################################################################")
 print(f"https://api.github.com/repos/{repo_owner}/{repo_name}/actions/runs/{run_id}/logs")
