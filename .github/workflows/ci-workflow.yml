@@ -48,7 +48,7 @@ jobs:
       - name: Run openai.py script
         run: |
           source myenv/bin/activate
-          python openai.py
+          python $$$openai.py
 
 
 
