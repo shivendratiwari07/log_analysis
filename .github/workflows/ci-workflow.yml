@@ -34,8 +34,11 @@ jobs:
       - name: Save GITHUB_RUN_ID to a file
         run: echo "${{ github.run_id }}" > run_id.txt
 
-      - name: List files in workspace (debug step)
+      - name: List files in workspace (before upload)
         run: ls -la
+
+      - name: Show content of run_id.txt (before upload)
+        run: cat run_id.txt
 
       - name: Upload GITHUB_RUN_ID artifact
         uses: actions/upload-artifact@v3
@@ -52,6 +55,8 @@ jobs:
         run: |
           source myenv/bin/activate
           python openai.py
+
+
 
 
 
