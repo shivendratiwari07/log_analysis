@@ -35,6 +35,7 @@ jobs:
         run: |
           source myenv/bin/activate
           python openai.py
+          python scripts/list_workflow_runs.py
 
         
 
