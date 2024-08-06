@@ -9,8 +9,8 @@ on:
       - main
 
 permissions:
-  actions: write
-  contents: write
+  actions: read
+  contents: read
 
 jobs:
   run-script:
@@ -36,12 +36,6 @@ jobs:
           source myenv/bin/activate
           python openai.py
 
-    # Trigger the log collection workflow
-      - name: Trigger Log Collection Workflow
-        run: |
-          gh workflow run log_collection.yml --ref main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
 
 
