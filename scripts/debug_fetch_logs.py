@@ -78,6 +78,8 @@ print(f"REPO_NAME: {repo_name}")
 print(f"GITHUB_RUN_ID: {run_id}")
 print(f"GITHUB_TOKEN: {'***' if token else 'MISSING'}")
 
+print("#####################################################################")
+print(f"https://api.github.com/repos/{repo_owner}/{repo_name}/actions/runs/{run_id}/logs")
 # Download the logs using curl
 curl_command = f"""
 curl -L \
@@ -89,6 +91,8 @@ curl -L \
 """
 print(f"Running command: {curl_command}")
 os.system(curl_command)
+
+print(f"https://api.github.com/repos/{repo_owner}/{repo_name}/actions/runs/{run_id}/logs")
 
 # Verify the logs have been downloaded
 if not os.path.exists('logs.zip'):
