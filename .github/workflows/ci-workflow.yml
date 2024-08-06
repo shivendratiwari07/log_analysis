@@ -77,6 +77,7 @@ jobs:
           source myenv/bin/activate
           python scripts/debug_fetch_logs.py
 
+
           
   # debug-token-job:
   #   runs-on: ubuntu-latest
