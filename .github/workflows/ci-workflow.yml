@@ -34,25 +34,16 @@ jobs:
       - name: Debug environment variables
         run: |
           echo "GITHUB_REPOSITORY: ${{ github.repository }}"
-          echo "GITHUB_RUN_ID: ${{ github.event.workflow_run.id }}"
+          echo "GITHUB_RUN_ID: ${{ github.run_id }}"
           echo "GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
           echo "REPO_OWNER: ${{ github.repository_owner }}"
           echo "REPO_NAME: ${{ github.event.repository.name }}"
-
-      - name: Upload logs to Azure
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_RUN_ID: ${{ github.event.workflow_run.id }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          REPO_OWNER: ${{ github.repository_owner }}
-          REPO_NAME: ${{ github.event.repository.name }}
-          AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
 
       - name: Run openai.py script
         run: |
           source myenv/bin/activate
           python openai.py
-          python scripts/list_workflow_runs.py
+
 
         
 

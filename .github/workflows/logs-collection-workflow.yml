@@ -47,5 +47,4 @@ jobs:
           AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
         run: |
           source myenv/bin/activate
-          python scripts/list_workflow_runs.py
           python scripts/debug_fetch_logs.py
