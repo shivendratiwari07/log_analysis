@@ -147,8 +147,9 @@
 
 import os
 import requests
-
+import zipfile
 from azure.storage.blob import BlobServiceClient
+
 
 def main():
     # Azure Storage account details
@@ -171,7 +172,7 @@ def main():
     print(f"GITHUB_RUN_ID: {run_id}")
     # Mask token print for security
     print(f"GITHUB_TOKEN: {'***' if token else 'MISSING'}")
-
+    
     print(f"Environment REPO_OWNER: {os.getenv('REPO_OWNER')}")
     print(f"Environment REPO_NAME: {os.getenv('REPO_NAME')}")
     print(f"Environment GITHUB_RUN_ID: {os.getenv('GITHUB_RUN_ID')}")
@@ -191,26 +192,31 @@ def main():
     # Download the logs using requests
     try:
         response = requests.get(logs_url, headers=headers)
-        response.raise_for_status()
+        response.raise_for_status()  # This will print details for HTTP errors
+        if not response.content:  # Check if response content is empty
+            raise Exception("Received empty content from GitHub API.")
         with open('logs.zip', 'wb') as f:
             f.write(response.content)
         print("Logs downloaded successfully.")
     except requests.exceptions.HTTPError as http_err:
         print(f"HTTP error occurred: {http_err}")
         print(f"Response content: {response.content.decode('utf-8')}")
+        return
     except Exception as err:
         print(f"Other error occurred: {err}")
-        raise
+        return
 
     # Verify the logs have been downloaded
-    # if not os.path.exists('logs.zip'):
-    #     raise Exception("Failed to download logs using requests.")
-    # print("Logs downloaded successfully. Checking file content...")
+    if not os.path.exists('logs.zip'):
+        print("Failed to download logs using requests.")
+        return
+    print("Logs downloaded successfully. Checking file content...")
 
     # Check file size
     file_size = os.path.getsize('logs.zip')
     if file_size == 0:
-        raise Exception("Downloaded logs file is empty.")
+        print("Downloaded logs file is empty.")
+        return
     print(f"logs.zip file size: {file_size} bytes")
 
     # Azure Blob Storage connection string
@@ -220,7 +226,7 @@ def main():
         print("Connected to Azure Blob Storage")
     except Exception as e:
         print(f"Failed to connect to Azure Blob Storage: {str(e)}")
-        raise
+        return
 
     # Upload logs to Azure Blob Storage
     blob_client = blob_service_client.get_blob_client(container=container_name, blob=f'github_actions_logs_{run_id}.zip')
@@ -230,7 +236,7 @@ def main():
         print("Logs uploaded successfully.")
     except Exception as e:
         print(f"Failed to upload logs: {str(e)}")
-        raise
+        return
 
 if __name__ == "__main__":
     main()
