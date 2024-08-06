@@ -9,8 +9,8 @@ on:
       - main
 
 permissions:
-  actions: read
-  contents: read
+  actions: write
+  contents: write
 
 jobs:
   run-script:
@@ -34,6 +34,9 @@ jobs:
       - name: Save GITHUB_RUN_ID to a file
         run: echo "${{ github.run_id }}" > run_id.txt
 
+      - name: List files in workspace (debug step)
+        run: ls -la
+
       - name: Upload GITHUB_RUN_ID artifact
         uses: actions/upload-artifact@v3
         with:
@@ -44,6 +47,7 @@ jobs:
         run: |
           source myenv/bin/activate
           python openai.py
+
 
 
 
