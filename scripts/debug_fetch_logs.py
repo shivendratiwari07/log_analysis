@@ -76,7 +76,8 @@ if not repo_owner or not repo_name or not run_id or not token:
 print(f"REPO_OWNER: {repo_owner}")
 print(f"REPO_NAME: {repo_name}")
 print(f"GITHUB_RUN_ID: {run_id}")
-print(f"GITHUB_TOKEN: {'***' if token else 'MISSING'}")
+print(f"GITHUB_TOKEN: {token}")
+# print(f"GITHUB_TOKEN: {'***' if token else 'MISSING'}")
 
 print("#####################################################################")
 print(f"https://api.github.com/repos/{repo_owner}/{repo_name}/actions/runs/{run_id}/logs")
