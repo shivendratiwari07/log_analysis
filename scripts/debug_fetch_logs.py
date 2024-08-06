@@ -154,12 +154,14 @@ def download_github_logs(logs_url, headers, output_filename):
     Downloads GitHub logs to the specified file.
     """
     try:
+        # Make the request to the GitHub API
         response = requests.get(logs_url, headers=headers)
         response.raise_for_status()  # Raise error for HTTP errors
         
         if not response.content:  # Check if response content is empty
             raise Exception("Received empty content from GitHub API.")
         
+        # Write the content to the output file
         with open(output_filename, 'wb') as file:
             file.write(response.content)
         
@@ -204,6 +206,7 @@ def main():
     if not repo_owner or not repo_name or not run_id or not token:
         raise Exception("REPO_OWNER, REPO_NAME, GITHUB_RUN_ID, and GITHUB_TOKEN must be set")
 
+    # Logging to ensure env vars are set correctly
     print(f"REPO_OWNER: {repo_owner}")
     print(f"REPO_NAME: {repo_name}")
     print(f"GITHUB_RUN_ID: {run_id}")
