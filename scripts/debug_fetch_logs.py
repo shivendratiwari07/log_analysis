@@ -203,9 +203,9 @@ def main():
         raise
 
     # Verify the logs have been downloaded
-    if not os.path.exists('logs.zip'):
-        raise Exception("Failed to download logs using requests.")
-    print("Logs downloaded successfully. Checking file content...")
+    # if not os.path.exists('logs.zip'):
+    #     raise Exception("Failed to download logs using requests.")
+    # print("Logs downloaded successfully. Checking file content...")
 
     # Check file size
     file_size = os.path.getsize('logs.zip')
