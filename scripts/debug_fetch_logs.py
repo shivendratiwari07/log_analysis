@@ -221,6 +221,9 @@ def main():
         "X-GitHub-Api-Version": "2022-11-28"
     }
 
+    # Print the headers to ensure they are set correctly
+    print(f"Headers: {headers}")
+
     output_filename = 'logs.zip'
     if not download_github_logs(logs_url, headers, output_filename):
         print("Failed to download logs.")
