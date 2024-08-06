@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 jobs:
-  run-script:
+  list-runs:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,13 +33,17 @@ jobs:
           source myenv/bin/activate
           pip install requests
 
-      - name: Run openai.py script
+      - name: List workflow runs
+        env:
+          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
         run: |
           source myenv/bin/activate
-          python openai.py
+          python scripts/list_workflow_runs.py
 
   upload-logs:
-    needs: run-script
+    needs: list-runs
     runs-on: ubuntu-latest
 
     steps:
@@ -76,6 +80,7 @@ jobs:
         run: |
           source myenv/bin/activate
           python scripts/debug_fetch_logs.py
+
 
 
 
