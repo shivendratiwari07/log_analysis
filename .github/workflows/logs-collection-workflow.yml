@@ -48,5 +48,8 @@ jobs:
       - name: List all files after analysis
         run: ls -la
 
+      - name: List all files after analysis
+        run: find . -type f
+
       - name: List analysis files
-        run: ls -la | grep _analysis.txt || echo "No analysis files found"
+        run: find . -type f -name "*_analysis.txt" || echo "No analysis files found"
