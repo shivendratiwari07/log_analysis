@@ -138,6 +138,8 @@ def main(run_id_file):
                 analysis_file.write(summary)
             
             print(f"Analysis saved to {analysis_filename}")
+            print("Analysis summary:")
+            print(summary)
 
             blob_name = f'github_actions_analysis_{os.path.basename(analysis_filename)}'
             if not upload_logs_to_azure(blob_service_client, container_name, blob_name, analysis_filename):
@@ -150,6 +152,7 @@ if __name__ == "__main__":
         print("Usage: python debug_fetch_logs.py <run_id_file>")
         sys.exit(1)
     main(sys.argv[1])
+
 
 
 ########$$$$$$$$$$$$$$ THIS SCRIPT IS STORING FAILED STEPS LOG
