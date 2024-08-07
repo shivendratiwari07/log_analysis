@@ -71,14 +71,14 @@ def main():
     try:
         connection_string = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
         blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-        print("Connected to Azure Blob Storage")
+        print("############################Connected to Azure Blob Storage########################")
     except Exception as e:
         print(f"Failed to connect to Azure Blob Storage: {str(e)}")
         return
 
     blob_name = f'github_actions_analysis_{os.path.basename(analysis_filename)}'
     if not upload_logs_to_azure(blob_service_client, container_name, blob_name, analysis_filename):
-        print(f"Failed to upload analysis for {log_filename}")
+        print(f"##############Failed to upload analysis for {log_filename} ##################")
 
 if __name__ == "__main__":
     main()
