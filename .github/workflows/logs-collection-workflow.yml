@@ -45,5 +45,8 @@ jobs:
         run: |
           source myenv/bin/activate
           python scripts/debug_fetch_logs.py run_id.txt
+      - name: List all files after analysis
+        run: ls -la
+
       - name: List analysis files
-        run: ls -la | grep _analysis.txt
+        run: ls -la | grep _analysis.txt || echo "No analysis files found"
