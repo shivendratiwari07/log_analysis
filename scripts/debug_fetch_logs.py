@@ -47,7 +47,7 @@ def upload_logs_to_azure(blob_service_client, container_name, blob_name, file_pa
     try:
         blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
         with open(file_path, 'rb') as log_file:
-            blob_client.upload_blob(log_file, overwrite=False)  # Ensure file is not overwritten
+            blob_client.upload_blob(log_file, overwrite=True)  # Overwrite file if it exists
         
         print(f"File uploaded successfully to {blob_name}.")
         blob_url = blob_client.url
@@ -141,20 +141,13 @@ def main(run_id_file):
             analysis_result = analyze_logs_with_custom_service(log_filename)
             summary = analysis_result.get('choices', [{}])[0].get('message', {}).get('content', 'No summary available')
 
-            detailed_summary = f"### Summary for {step['job_name']} - {step['step_name']}\n"
-            detailed_summary += f"**Timestamp:** {timestamp}\n"
-            detailed_summary += f"**Log File:** {log_filename}\n"
-            detailed_summary += f"**Log Blob URL:** {log_blob_url}\n\n"
-            detailed_summary += "#### Analysis:\n"
-            detailed_summary += summary + "\n\n"
-
             analysis_filename = log_filename.replace('_logs_', '_analysis_')
             with open(analysis_filename, 'w') as analysis_file:
-                analysis_file.write(detailed_summary)
+                analysis_file.write(summary)
             
             print(f"Analysis saved to {analysis_filename}")
             print("Analysis summary:")
-            print(detailed_summary)
+            print(summary)
 
             blob_name = f'github_actions_analysis_{run_id}_{step["job_name"]}_{step["step_name"]}_{timestamp}.txt'
             analysis_blob_url = upload_logs_to_azure(blob_service_client, container_name, blob_name, analysis_filename)
