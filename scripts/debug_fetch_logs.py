@@ -96,11 +96,119 @@ def main(run_id_file):
             print(f"Failed to upload logs for {step['job_name']} - {step['step_name']}")
             continue
 
+        # Call the analyze_logs.py script for analysis
+        os.system(f"python analyze_logs.py {log_filename}")
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python debug_fetch_logs.py <run_id_file>")
         sys.exit(1)
     main(sys.argv[1])
+
+########$$$$$$$$$$$$$$ THIS SCRIPT IS STORING FAILED STEPS LOG
+# import os
+# import sys
+# import requests
+# from azure.storage.blob import BlobServiceClient
+
+# def read_run_id(run_id_file):
+#     with open(run_id_file, 'r') as file:
+#         run_id = file.read().strip()
+#     return run_id
+
+# def get_failed_steps(owner, repo, run_id, headers):
+#     url = f"https://api.github.com/repos/{owner}/{repo}/actions/runs/{run_id}/jobs"
+#     response = requests.get(url, headers=headers)
+#     response.raise_for_status()
+    
+#     jobs = response.json()["jobs"]
+#     failed_steps = []
+    
+#     for job in jobs:
+#         job_logs_url = f"https://api.github.com/repos/{owner}/{repo}/actions/jobs/{job['id']}/logs"
+#         for step in job["steps"]:
+#             if step["conclusion"] == "failure":
+#                 failed_steps.append({
+#                     "job_name": job["name"],
+#                     "step_name": step["name"],
+#                     "job_logs_url": job_logs_url
+#                 })
+    
+#     return failed_steps
+
+# def download_logs(logs_url, headers, output_filename):
+#     response = requests.get(logs_url, headers=headers)
+#     response.raise_for_status()
+    
+#     if not response.content:
+#         raise Exception("Received empty content from GitHub API.")
+    
+#     with open(output_filename, 'wb') as file:
+#         file.write(response.content)
+    
+#     print(f"Logs downloaded successfully to {output_filename}.")
+#     return True
+
+# def upload_logs_to_azure(blob_service_client, container_name, blob_name, file_path):
+#     try:
+#         blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+#         with open(file_path, 'rb') as log_file:
+#             blob_client.upload_blob(log_file, overwrite=True)
+        
+#         print(f"Logs uploaded successfully to {blob_name}.")
+#         return True
+#     except Exception as e:
+#         print(f"Failed to upload logs: {str(e)}")
+#     return False
+
+# def main(run_id_file):
+#     run_id = read_run_id(run_id_file)
+
+#     account_name = "githubactions02"
+#     account_key = os.getenv('AZURE_STORAGE_KEY')
+#     container_name = "actionslogs"
+#     repo_owner = os.getenv('REPO_OWNER')
+#     repo_name = os.getenv('REPO_NAME')
+#     token = os.getenv('GITHUB_TOKEN')
+
+#     if not all([repo_owner, repo_name, run_id, token]):
+#         raise Exception("REPO_OWNER, REPO_NAME, GITHUB_RUN_ID, and GITHUB_TOKEN must be set")
+
+#     headers = {
+#         "Accept": "application/vnd.github+json",
+#         "Authorization": f"Bearer {token}",
+#         "X-GitHub-Api-Version": "2022-11-28"
+#     }
+
+#     failed_steps = get_failed_steps(repo_owner, repo_name, run_id, headers)
+#     if not failed_steps:
+#         print("No failed steps found.")
+#         return
+
+#     try:
+#         connection_string = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
+#         blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+#         print("Connected to Azure Blob Storage")
+#     except Exception as e:
+#         print(f"Failed to connect to Azure Blob Storage: {str(e)}")
+#         return
+
+#     for step in failed_steps:
+#         log_filename = f"{step['job_name']}_{step['step_name']}_logs.txt"
+#         if not download_logs(step["job_logs_url"], headers, log_filename):
+#             print(f"Failed to download logs for {step['job_name']} - {step['step_name']}")
+#             continue
+
+#         blob_name = f'github_actions_logs_{run_id}_{step["job_name"]}_{step["step_name"]}.txt'
+#         if not upload_logs_to_azure(blob_service_client, container_name, blob_name, log_filename):
+#             print(f"Failed to upload logs for {step['job_name']} - {step['step_name']}")
+#             continue
+
+# if __name__ == "__main__":
+#     if len(sys.argv) != 2:
+#         print("Usage: python debug_fetch_logs.py <run_id_file>")
+#         sys.exit(1)
+#     main(sys.argv[1])
 
 
 
