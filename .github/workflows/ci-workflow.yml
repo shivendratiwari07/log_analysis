@@ -54,7 +54,7 @@ jobs:
       - name: Run openai.py script
         run: |
           source myenv/bin/activate
-          python penai.py
+          python enai.py
 
 
 
