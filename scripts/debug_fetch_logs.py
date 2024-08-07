@@ -3,6 +3,11 @@ import sys
 import requests
 from azure.storage.blob import BlobServiceClient
 
+def read_run_id(run_id_file):
+    with open(run_id_file, 'r') as file:
+        run_id = file.read().strip()
+    return run_id
+
 def get_failed_steps(owner, repo, run_id, headers):
     url = f"https://api.github.com/repos/{owner}/{repo}/actions/runs/{run_id}/jobs"
     response = requests.get(url, headers=headers)
@@ -12,12 +17,13 @@ def get_failed_steps(owner, repo, run_id, headers):
     failed_steps = []
     
     for job in jobs:
+        job_logs_url = f"https://api.github.com/repos/{owner}/{repo}/actions/jobs/{job['id']}/logs"
         for step in job["steps"]:
             if step["conclusion"] == "failure":
                 failed_steps.append({
                     "job_name": job["name"],
                     "step_name": step["name"],
-                    "job_logs_url": job["logs_url"]
+                    "job_logs_url": job_logs_url
                 })
     
     return failed_steps
@@ -48,8 +54,7 @@ def upload_logs_to_azure(blob_service_client, container_name, blob_name, file_pa
     return False
 
 def main(run_id_file):
-    with open(run_id_file, 'r') as file:
-        run_id = file.read().strip()
+    run_id = read_run_id(run_id_file)
 
     account_name = "githubactions02"
     account_key = os.getenv('AZURE_STORAGE_KEY')
@@ -96,6 +101,7 @@ if __name__ == "__main__":
         print("Usage: python debug_fetch_logs.py <run_id_file>")
         sys.exit(1)
     main(sys.argv[1])
+
 
 
 
