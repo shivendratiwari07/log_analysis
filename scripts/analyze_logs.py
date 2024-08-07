@@ -27,6 +27,18 @@ def analyze_logs_with_openai(log_filename):
     response.raise_for_status()
     return response.json()
 
+def upload_logs_to_azure(blob_service_client, container_name, blob_name, file_path):
+    try:
+        blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+        with open(file_path, 'rb') as log_file:
+            blob_client.upload_blob(log_file, overwrite=True)
+        
+        print(f"Analysis uploaded successfully to {blob_name}.")
+        return True
+    except Exception as e:
+        print(f"Failed to upload analysis: {str(e)}")
+    return False
+
 def main():
     if len(sys.argv) != 2:
         print("Usage: python analyze_logs.py <log_filename>")
@@ -46,6 +58,22 @@ def main():
         analysis_file.write(summary)
     
     print(f"Analysis saved to {analysis_filename}")
+
+    # Upload analysis to Azure Blob Storage
+    account_name = "githubactions02"
+    account_key = os.getenv('AZURE_STORAGE_KEY')
+    container_name = "actionslogs"
+
+    try:
+        connection_string = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
+        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        print("Connected to Azure Blob Storage")
+    except Exception as e:
+        print(f"Failed to connect to Azure Blob Storage: {str(e)}")
+        return
+
+    blob_name = f'github_actions_logs_{analysis_filename}'
+    upload_logs_to_azure(blob_service_client, container_name, blob_name, analysis_filename)
 
 if __name__ == "__main__":
     main()
