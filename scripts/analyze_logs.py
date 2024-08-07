@@ -2,7 +2,7 @@ import requests
 import sys
 import os
 from azure.storage.blob import BlobServiceClient
-print("############################################################### analyzo_logs.py started")
+print("############################################################### analyzo_logs.py started ####")
 def analyze_logs_with_openai(log_filename):
     url = "https://www.dex.inside.philips.com/philips-ai-chat/chat/api/user/SendImageMessage"
     headers = {
@@ -30,6 +30,7 @@ def analyze_logs_with_openai(log_filename):
     return response.json()
 
 def upload_logs_to_azure(blob_service_client, container_name, blob_name, file_path):
+    print("upload_logs_to_azure  fuction starting ..............")
     try:
         blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
         with open(file_path, 'rb') as log_file:
@@ -56,7 +57,7 @@ def main():
     summary_lines = summary.split('\n')
     if len(summary_lines) > 5:
         summary = '\n'.join(summary_lines[:5])
-    
+    print("###############summarizing logssss")
     analysis_filename = log_filename.replace('_logs.txt', '_analysis.txt')
     with open(analysis_filename, 'w') as analysis_file:
         analysis_file.write(summary)
