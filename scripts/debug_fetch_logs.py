@@ -64,7 +64,7 @@ def analyze_logs_with_openai(log_filename):
     }
     with open(log_filename, 'r') as file:
         log_content = file.read()
-        
+    
     payload = {
         "messages": [
             {
@@ -151,7 +151,10 @@ def main(run_id_file):
             print(summary)
 
             blob_name = f'github_actions_analysis_{os.path.basename(analysis_filename)}'
-            if not upload_logs_to_azure(blob_service_client, container_name, blob_name, analysis_filename):
+            if upload_logs_to_azure(blob_service_client, container_name, blob_name, analysis_filename):
+                blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+                print(f"Analysis Blob URL: {blob_client.url}")
+            else:
                 print(f"Failed to upload analysis for {log_filename}")
         except Exception as e:
             print(f"Failed to analyze logs for {log_filename}: {str(e)}")
@@ -161,6 +164,7 @@ if __name__ == "__main__":
         print("Usage: python debug_fetch_logs.py <run_id_file>")
         sys.exit(1)
     main(sys.argv[1])
+
 
 
 
