@@ -49,6 +49,8 @@ def upload_logs_to_azure(blob_service_client, container_name, blob_name, file_pa
             blob_client.upload_blob(log_file, overwrite=True)
         
         print(f"File uploaded successfully to {blob_name}.")
+        blob_url = blob_client.url
+        print(f"Blob URL: {blob_url}")
         return True
     except Exception as e:
         print(f"Failed to upload file: {str(e)}")
@@ -159,6 +161,7 @@ if __name__ == "__main__":
         print("Usage: python debug_fetch_logs.py <run_id_file>")
         sys.exit(1)
     main(sys.argv[1])
+
 
 
 
