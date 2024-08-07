@@ -97,7 +97,8 @@ def main(run_id_file):
             continue
 
         # Call the analyze_logs.py script for analysis
-        os.system(f"python analyze_logs.py {log_filename}")
+        #os.system(f"python analyze_logs.py {log_filename}")
+        os.system(f"python scripts/analyze_logs.py {log_filename}")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
