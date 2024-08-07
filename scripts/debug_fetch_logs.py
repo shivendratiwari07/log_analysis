@@ -17,7 +17,7 @@ def get_failed_steps(owner, repo, run_id, headers):
                 failed_steps.append({
                     "job_name": job["name"],
                     "step_name": step["name"],
-                    "log_url": step["log_url"]
+                    "job_logs_url": job["logs_url"]
                 })
     
     return failed_steps
@@ -82,7 +82,7 @@ def main(run_id_file):
 
     for step in failed_steps:
         log_filename = f"{step['job_name']}_{step['step_name']}_logs.txt"
-        if not download_logs(step["log_url"], headers, log_filename):
+        if not download_logs(step["job_logs_url"], headers, log_filename):
             print(f"Failed to download logs for {step['job_name']} - {step['step_name']}")
             continue
 
@@ -96,6 +96,7 @@ if __name__ == "__main__":
         print("Usage: python debug_fetch_logs.py <run_id_file>")
         sys.exit(1)
     main(sys.argv[1])
+
 
 
 
