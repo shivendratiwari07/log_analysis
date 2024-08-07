@@ -25,11 +25,11 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
-        run: |
-          python -m venv myenv
-          source myenv/bin/activate
-          pp install requests
+      # - name: Install dependencies
+      #   run: |
+      #     python -m venv myenv
+      #     source myenv/bin/activate
+      #     pp install requests
 
       - name: Save GITHUB_RUN_ID to a file
         run: echo "${{ github.run_id }}" > run_id.txt
@@ -44,7 +44,13 @@ jobs:
           git add run_id.txt
           git commit -m "Add GITHUB_RUN_ID"
           git push
-          
+
+      - name: Install dependencies
+        run: |
+          python -m venv myenv
+          source myenv/bin/activate
+          pp install requests
+
       - name: Run openai.py script
         run: |
           source myenv/bin/activate
