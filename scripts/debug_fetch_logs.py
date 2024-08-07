@@ -98,6 +98,7 @@ def main(run_id_file):
 
         # Call the analyze_logs.py script for analysis
         #os.system(f"python analyze_logs.py {log_filename}")
+        print(f"Analyzing log file: {log_filename}")
         os.system(f"python scripts/analyze_logs.py {log_filename}")
 
 if __name__ == "__main__":

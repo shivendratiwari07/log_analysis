@@ -47,9 +47,9 @@ jobs:
           python scripts/debug_fetch_logs.py run_id.txt
       - name: List all files after analysis
         run: ls -la
-
       - name: List all files after analysis
-        run: find . -type f
+        run: |
+          cd scripts
+          ls -la
 
-      - name: List analysis files
-        run: find . -type f -name "*_analysis.txt" || echo "No analysis files found"
+      
