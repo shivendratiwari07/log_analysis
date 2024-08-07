@@ -27,9 +27,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          phon -m venv myenv
+          python -m venv myenv
           source myenv/bin/activate
-          pip install requests
+          pp install requests
 
       - name: Save GITHUB_RUN_ID to a file
         run: echo "${{ github.run_id }}" > run_id.txt
