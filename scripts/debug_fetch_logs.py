@@ -2,6 +2,7 @@ import os
 import sys
 import requests
 from azure.storage.blob import BlobServiceClient
+from datetime import datetime
 
 def read_run_id(run_id_file):
     with open(run_id_file, 'r') as file:
@@ -46,7 +47,7 @@ def upload_logs_to_azure(blob_service_client, container_name, blob_name, file_pa
     try:
         blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
         with open(file_path, 'rb') as log_file:
-            blob_client.upload_blob(log_file, overwrite=True)
+            blob_client.upload_blob(log_file, overwrite=False)  # Ensure file is not overwritten
         
         print(f"File uploaded successfully to {blob_name}.")
         blob_url = blob_client.url
@@ -122,12 +123,13 @@ def main(run_id_file):
         return
 
     for step in failed_steps:
-        log_filename = f"{step['job_name']}_{step['step_name']}_logs.txt"
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        log_filename = f"{step['job_name']}_{step['step_name']}_logs_{timestamp}.txt"
         if not download_logs(step["job_logs_url"], headers, log_filename):
             print(f"Failed to download logs for {step['job_name']} - {step['step_name']}")
             continue
 
-        blob_name = f'github_actions_logs_{run_id}_{step["job_name"]}_{step["step_name"]}.txt'
+        blob_name = f'github_actions_logs_{run_id}_{step["job_name"]}_{step["step_name"]}_{timestamp}.txt'
         if not upload_logs_to_azure(blob_service_client, container_name, blob_name, log_filename):
             print(f"Failed to upload logs for {step['job_name']} - {step['step_name']}")
             continue
@@ -142,7 +144,7 @@ def main(run_id_file):
             if len(summary_lines) > 5:
                 summary = '\n'.join(summary_lines[:5])
             
-            analysis_filename = log_filename.replace('_logs.txt', '_analysis.txt')
+            analysis_filename = log_filename.replace('_logs_', '_analysis_')
             with open(analysis_filename, 'w') as analysis_file:
                 analysis_file.write(summary)
             
@@ -150,7 +152,7 @@ def main(run_id_file):
             print("Analysis summary:")
             print(summary)
 
-            blob_name = f'github_actions_analysis_{os.path.basename(analysis_filename)}'
+            blob_name = f'github_actions_analysis_{run_id}_{step["job_name"]}_{step["step_name"]}_{timestamp}.txt'
             if upload_logs_to_azure(blob_service_client, container_name, blob_name, analysis_filename):
                 blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
                 print(f"Analysis Blob URL: {blob_client.url}")
@@ -164,6 +166,7 @@ if __name__ == "__main__":
         print("Usage: python debug_fetch_logs.py <run_id_file>")
         sys.exit(1)
     main(sys.argv[1])
+
 
 
 
