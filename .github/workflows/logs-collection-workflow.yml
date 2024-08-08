@@ -38,7 +38,7 @@ jobs:
 
       - name: Upload logs and analyze
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           REPO_OWNER: ${{ github.repository_owner }}
           REPO_NAME: ${{ github.event.repository.name }}
