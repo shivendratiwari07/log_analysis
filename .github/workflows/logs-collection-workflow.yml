@@ -9,7 +9,8 @@ on:
 permissions:
   actions: read
   contents: read
-  checks: write
+  issues: write
+  pull-requests: write
 
 jobs:
   collect-logs:
@@ -61,18 +62,7 @@ jobs:
           name: analysis-summary
           path: ./scripts/*_analysis_*.txt
 
-      - name: Create annotations
-        uses: atlassian/gajira-create@v1.1.2
-        with:
-          summary: "Log Analysis"
-          description: "Analysis summary of logs"
-        env:
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
-          JIRA_SITE: ${{ secrets.JIRA_SITE }}
-          JIRA_PROJECT: ${{ secrets.JIRA_PROJECT }}
-
-      - name: Create GitHub issue with analysis summary
+      - name: Create annotations as issue comments
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
@@ -84,10 +74,10 @@ jobs:
               const content = fs.readFileSync(`./scripts/${file}`, 'utf8');
               body += `### ${file}\n\`\`\`\n${content}\n\`\`\`\n`;
             }
-            await github.rest.issues.create({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: 'Log Analysis Summary',
+              issue_number: context.issue.number,
               body: body
             });
 
@@ -112,6 +102,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
         run: echo $GITHUB_TOKEN
+
 
 
 
