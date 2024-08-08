@@ -62,10 +62,11 @@ jobs:
 
       - name: Display analysis summary as annotations
         run: |
-          for file in ./scripts/*_analysis_*.txt; do
-            summary=$(cat $file)
+          find ./scripts/ -name "*_analysis_*.txt" | while read -r file; do
+            summary=$(cat "$file")
             echo "::warning file=${file},line=1,col=1::${summary}"
           done
+
 
 
 
