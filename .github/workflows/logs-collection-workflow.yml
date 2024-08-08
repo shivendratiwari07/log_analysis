@@ -35,7 +35,7 @@ jobs:
       - name: Verify run_id.txt content
         run: cat run_id.txt
 
-      - name: Upload logs to Azure
+      - name: Upload logs and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -47,7 +47,73 @@ jobs:
           source myenv/bin/activate
           python scripts/debug_fetch_logs.py run_id.txt
 
-      - name: List all files after analysis
+      - name: Upload analysis summary as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: analysis-summary
+          path: ./scripts/*.txt
+
+      - name: Display analysis summary as annotations
         run: |
-          cd scripts
-          ls -la
+          for file in ./scripts/*_analysis_*.txt; do
+            summary=$(cat $file)
+            echo "::warning file=${file},line=1,col=1::${summary}"
+          done
+
+
+
+
+
+# name: Log Collection and Analysis Workflow
+
+# on:
+#   workflow_run:
+#     workflows: ["Main CI Workflow"]
+#     types:
+#       - completed
+
+# permissions:
+#   actions: read
+#   contents: read
+
+# jobs:
+#   collect-logs:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v2
+
+#       - name: Set up Python 3.12
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: '3.12'
+
+#       - name: Install dependencies
+#         run: |
+#           python -m venv myenv
+#           source myenv/bin/activate
+#           pip install requests azure-storage-blob
+
+#       - name: List files in workspace (after checkout)
+#         run: ls -la
+
+#       - name: Verify run_id.txt content
+#         run: cat run_id.txt
+
+#       - name: Upload logs to Azure
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#           GITHUB_REPOSITORY: ${{ github.repository }}
+#           REPO_OWNER: ${{ github.repository_owner }}
+#           REPO_NAME: ${{ github.event.repository.name }}
+#           AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+#           CUSTOM_SERVICE_COOKIE: ${{ secrets.CUSTOM_SERVICE_COOKIE }}
+#         run: |
+#           source myenv/bin/activate
+#           python scripts/debug_fetch_logs.py run_id.txt
+
+#       - name: List all files after analysis
+#         run: |
+#           cd scripts
+#           ls -la
