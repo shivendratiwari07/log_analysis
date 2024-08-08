@@ -65,38 +65,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Create a check run
           check_run_id=$(curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \
           https://api.github.com/repos/${{ github.repository }}/check-runs \
-          -d '{"name":"Log Analysis","head_sha":"'${{ github.sha }}'","status":"in_progress"}' | jq -r .id)
-
-          if [ -z "$check_run_id" ]; then
-            echo "Failed to create check run."
-            exit 1
-          fi
-
-          # Add annotations from analysis files
+          -d "{\"name\":\"Log Analysis\",\"head_sha\":\"${{ github.event.workflow_run.head_sha }}\",\"status\":\"completed\",\"conclusion\":\"neutral\"}" | jq -r .id)
+          
           for file in ./scripts/*_analysis_*.txt; do
             summary=$(cat "$file")
-            echo "::warning file=${file},line=1,col=1::${summary}"
-            
-            annotation_payload=$(jq -n \
-              --arg path "$file" \
-              --arg message "$summary" \
-              '[{"path":$path,"start_line":1,"end_line":1,"annotation_level":"warning","message":$message}]')
-
             curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/check-runs/$check_run_id/annotations \
-            -d "$annotation_payload"
+            -d "{
+              \"path\": \"$file\",
+              \"start_line\": 1,
+              \"end_line\": 1,
+              \"annotation_level\": \"warning\",
+              \"message\": \"$summary\"
+            }"
           done
 
-          # Complete the check run
-          curl -s -X PATCH -H "Authorization: token $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/${{ github.repository }}/check-runs/$check_run_id \
-          -d '{"status":"completed","conclusion":"neutral"}'
 
 
 
