@@ -62,57 +62,46 @@ jobs:
           path: ./scripts/*_analysis_*.txt
 
       - name: Create check run and add annotations
-        env:
-          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
-        run: |
-          annotations="[]"
-          for file in ./scripts/*_analysis_*.txt; do
-            summary=$(cat "$file")
-            file_name=$(basename "$file")
-            annotation=$(jq -n --arg path "$file_name" --arg message "$summary" '{
-              path: $path,
-              start_line: 1,
-              end_line: 1,
-              annotation_level: "warning",
-              message: $message
-            }')
-            annotations=$(echo "$annotations" | jq --argjson annotation "$annotation" '. + [$annotation]')
-          done
-
-          jq -n --argjson annotations "$annotations" --arg sha "${{ github.event.workflow_run.head_sha }}" '{
-            name: "Log Analysis",
-            head_sha: $sha,
-            status: "completed",
-            conclusion: "neutral",
-            output: {
-              title: "Log Analysis",
-              summary: "Analysis summary of logs",
-              annotations: $annotations
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const head_sha = process.env.GITHUB_SHA;
+            const check_run = await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Log Analysis',
+              head_sha: head_sha,
+              status: 'completed',
+              conclusion: 'neutral',
+              output: {
+                title: 'Log Analysis',
+                summary: 'Analysis summary of logs',
+              }
+            });
+            const check_run_id = check_run.data.id;
+            const files = fs.readdirSync('./scripts').filter(file => file.endsWith('_analysis_.txt'));
+            for (const file of files) {
+              const content = fs.readFileSync(path.join('./scripts', file), 'utf8');
+              await github.rest.checks.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                check_run_id: check_run_id,
+                output: {
+                  title: 'Log Analysis',
+                  summary: 'Analysis summary of logs',
+                  annotations: [{
+                    path: file,
+                    start_line: 1,
+                    end_line: 1,
+                    annotation_level: 'warning',
+                    message: content
+                  }]
+                }
+              });
             }
-          }' > payload.json
-
-          echo "Payload JSON:"
-          cat payload.json
-
-          check_run_response=$(curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/${{ github.repository }}/check-runs \
-          -d @payload.json)
-
-          echo "Check Run Response:"
-          echo "$check_run_response"
-
-          # Verify the annotations were added correctly
-          annotations_url=$(echo "$check_run_response" | jq -r .output.annotations_url)
-          if [ -n "$annotations_url" ]; then
-            annotations_response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "$annotations_url")
-            echo "Annotations Response:"
-            echo "$annotations_response"
-          else
-            echo "No annotations URL found in the response."
-          fi
 
       - name: Check API rate limits
         env:
@@ -135,6 +124,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
         run: echo $GITHUB_TOKEN
+
 
 
 
