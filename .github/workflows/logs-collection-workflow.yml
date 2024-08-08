@@ -50,6 +50,10 @@ jobs:
       - name: List files after analysis
         run: ls -la scripts/
 
+      - name: List analysis files
+        run: |
+          ls -la ./scripts/*_analysis_*.txt
+
       - name: Upload analysis summary as artifact
         uses: actions/upload-artifact@v2
         with:
@@ -62,6 +66,7 @@ jobs:
             summary=$(cat $file)
             echo "::warning file=${file},line=1,col=1::${summary}"
           done
+
 
 
 
