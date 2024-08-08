@@ -65,38 +65,40 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Create a check run
-          check_run_response=$(curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/${{ github.repository }}/check-runs \
-          -d "{\"name\":\"my_annotation\",\"head_sha\":\"${{ github.event.workflow_run.head_sha }}\",\"status\":\"completed\",\"conclusion\":\"neutral\"}")
-
-          echo "Check Run Response: $check_run_response"
-
-          check_run_id=$(echo "$check_run_response" | jq -r .id)
-
-          if [ "$check_run_id" == "null" ]; then
-            echo "Failed to create check run. Response: $check_run_response"
-            exit 1
-          fi
-
+          annotations="[]"
           for file in ./scripts/*_analysis_*.txt; do
             summary=$(cat "$file")
             file_name=$(basename "$file")
-            annotation_payload=$(jq -n --arg path "$file_name" --arg message "$summary" '{
+            annotation=$(jq -n --arg path "$file_name" --arg message "$summary" '{
               path: $path,
               start_line: 1,
               end_line: 1,
               annotation_level: "warning",
               message: $message
             }')
-            annotation_response=$(curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }}/check-runs/$check_run_id/annotations \
-            -d "$annotation_payload")
-
-            echo "Annotation Response: $annotation_response"
+            annotations=$(echo "$annotations" | jq --argjson annotation "$annotation" '. + [$annotation]')
           done
+
+          check_run_response=$(curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }}/check-runs \
+          -d @- <<EOF
+          {
+            "name": "my_annotation",
+            "head_sha": "${{ github.event.workflow_run.head_sha }}",
+            "status": "completed",
+            "conclusion": "neutral",
+            "output": {
+              "title": "Log Analysis",
+              "summary": "Analysis summary of logs",
+              "annotations": $annotations
+            }
+          }
+EOF
+          )
+
+          echo "Check Run Response: $check_run_response"
+
 
 
 
