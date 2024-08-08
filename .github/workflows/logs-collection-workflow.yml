@@ -69,7 +69,7 @@ jobs:
           check_run_response=$(curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \
           https://api.github.com/repos/${{ github.repository }}/check-runs \
-          -d "{\"name\":\"Log Analysis\",\"head_sha\":\"${{ github.event.workflow_run.head_sha }}\",\"status\":\"completed\",\"conclusion\":\"neutral\"}")
+          -d "{\"name\":\"my_annotation\",\"head_sha\":\"${{ github.event.workflow_run.head_sha }}\",\"status\":\"completed\",\"conclusion\":\"neutral\"}")
 
           echo "Check Run Response: $check_run_response"
 
@@ -90,11 +90,12 @@ jobs:
               \"start_line\": 1,
               \"end_line\": 1,
               \"annotation_level\": \"warning\",
-              \"message\": \"$(echo "$summary" | jq -sR .)\"
+              \"message\": $(echo "$summary" | jq -sR .)
             }")
 
             echo "Annotation Response: $annotation_response"
           done
+
 
 
 
