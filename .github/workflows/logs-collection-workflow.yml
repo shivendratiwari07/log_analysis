@@ -122,7 +122,7 @@ jobs:
 
       - name: Verify token permissions
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
         run: |
           curl -H "Authorization: token $GITHUB_TOKEN" \
                -H "Accept: application/vnd.github.v3+json" \
