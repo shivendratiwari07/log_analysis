@@ -63,7 +63,7 @@ jobs:
 
       - name: Create check run and add annotations
         env:
-          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           annotations="[]"
           for file in ./scripts/*_analysis_*.txt; do
@@ -110,6 +110,8 @@ jobs:
           fi
 
       - name: Check API rate limits
+        env:
+          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
         run: |
           rate_limit_response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \
