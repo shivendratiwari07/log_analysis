@@ -38,7 +38,7 @@ jobs:
 
       - name: Upload logs and analyze
         env:
-          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           REPO_OWNER: ${{ github.repository_owner }}
           REPO_NAME: ${{ github.event.repository.name }}
@@ -80,7 +80,7 @@ jobs:
           done
 
           jq -n --argjson annotations "$annotations" --arg sha "${{ github.event.workflow_run.head_sha }}" '{
-            name: "my_annotation",
+            name: "Log Analysis",
             head_sha: $sha,
             status: "completed",
             conclusion: "neutral",
@@ -90,6 +90,8 @@ jobs:
               annotations: $annotations
             }
           }' > payload.json
+
+          cat payload.json
 
           check_run_response=$(curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \
@@ -111,7 +113,7 @@ jobs:
 
       - name: Check API rate limits
         env:
-          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           rate_limit_response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \
@@ -120,7 +122,7 @@ jobs:
 
       - name: Verify token permissions
         env:
-          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           curl -H "Authorization: token $GITHUB_TOKEN" \
                -H "Accept: application/vnd.github.v3+json" \
@@ -128,8 +130,9 @@ jobs:
 
       - name: Check token value
         env:
-          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: echo $GITHUB_TOKEN
+
 
 
 
