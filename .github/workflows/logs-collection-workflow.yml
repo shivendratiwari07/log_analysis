@@ -63,7 +63,7 @@ jobs:
 
       - name: Create check run and add annotations
         env:
-          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           annotations="[]"
           for file in ./scripts/*_analysis_*.txt; do
