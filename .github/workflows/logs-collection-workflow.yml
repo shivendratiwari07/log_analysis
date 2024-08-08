@@ -82,19 +82,21 @@ jobs:
 
           for file in ./scripts/*_analysis_*.txt; do
             summary=$(cat "$file")
+            file_name=$(basename "$file")
             annotation_response=$(curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/check-runs/$check_run_id/annotations \
             -d "{
-              \"path\": \"$(basename $file)\",
+              \"path\": \"$file_name\",
               \"start_line\": 1,
               \"end_line\": 1,
               \"annotation_level\": \"warning\",
-              \"message\": $(echo "$summary" | jq -sR .)
+              \"message\": $(echo \"$summary\" | jq -sR .)
             }")
 
             echo "Annotation Response: $annotation_response"
           done
+
 
 
 
