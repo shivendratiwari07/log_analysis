@@ -69,7 +69,7 @@ jobs:
           for file in ./scripts/*_analysis_*.txt; do
             summary=$(cat "$file")
             file_name=$(basename "$file")
-            annotation=$(jq -n --arg path "scripts/$file_name" --arg message "$summary" '{
+            annotation=$(jq -n --arg path "$file_name" --arg message "$summary" '{
               path: $path,
               start_line: 1,
               end_line: 1,
@@ -105,6 +105,7 @@ jobs:
           "$annotations_url")
 
           echo "Annotations Response: $annotations_response"
+
 
 
 
