@@ -28,7 +28,7 @@ jobs:
         run: |
           python -m venv myenv
           source myenv/bin/activate
-          pip install requests azure-storage-blob
+          pip install requests azure-storage-blob jq
 
       - name: List files in workspace (after checkout)
         run: ls -la
@@ -94,6 +94,7 @@ jobs:
           -H "Accept: application/vnd.github.v3+json" \
           https://api.github.com/repos/${{ github.repository }}/check-runs/$check_run_id \
           -d '{"status":"completed","conclusion":"neutral"}'
+
 
 
 
