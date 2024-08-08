@@ -47,11 +47,14 @@ jobs:
           source myenv/bin/activate
           python scripts/debug_fetch_logs.py run_id.txt
 
+      - name: List files after analysis
+        run: ls -la scripts/
+
       - name: Upload analysis summary as artifact
         uses: actions/upload-artifact@v2
         with:
           name: analysis-summary
-          path: ./scripts/*.txt
+          path: ./scripts/*_analysis_*.txt
 
       - name: Display analysis summary as annotations
         run: |
@@ -59,6 +62,8 @@ jobs:
             summary=$(cat $file)
             echo "::warning file=${file},line=1,col=1::${summary}"
           done
+
+
 
 
 

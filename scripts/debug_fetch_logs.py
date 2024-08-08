@@ -156,7 +156,7 @@ def main(run_id_file):
                 print(f"Analysis Blob URL: {analysis_blob_url}")
                 
                 # Create GitHub Actions annotations for the analysis summary
-                print(f"::warning file={log_filename},line=1,col=1::{summary}")
+                print(f"::warning file={analysis_filename},line=1,col=1::{summary}")
             else:
                 print(f"Failed to upload analysis for {log_filename}")
         except Exception as e:
@@ -167,6 +167,7 @@ if __name__ == "__main__":
         print("Usage: python debug_fetch_logs.py <run_id_file>")
         sys.exit(1)
     main(sys.argv[1])
+
 
 
 
