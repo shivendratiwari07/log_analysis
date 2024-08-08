@@ -142,7 +142,7 @@ def main(run_id_file):
             summary = analysis_result.get('choices', [{}])[0].get('message', {}).get('content', 'No summary available')
 
             # Save the analysis summary to a unique file
-            analysis_filename = f"{step['job_name']}_{step['step_name']}_analysis_{timestamp}.txt"
+            analysis_filename = f"./scripts/{step['job_name']}_{step['step_name']}_analysis_{timestamp}.txt"
             with open(analysis_filename, 'w') as analysis_file:
                 analysis_file.write(summary)
             
@@ -167,6 +167,7 @@ if __name__ == "__main__":
         print("Usage: python debug_fetch_logs.py <run_id_file>")
         sys.exit(1)
     main(sys.argv[1])
+
 
 
 
