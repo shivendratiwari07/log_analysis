@@ -73,7 +73,7 @@ def analyze_logs_with_custom_service(log_filename):
                 "content": [
                     {
                         "type": "text",
-                        "text": "Please analyze the following logs to detect issues and provide a summary:\n\n" + log_content
+                        "text": "Please detect issues and provide a summary of issue only :\n\n" + log_content
                     }
                 ]
             }
