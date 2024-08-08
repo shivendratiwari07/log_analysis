@@ -6,6 +6,11 @@ on:
     types:
       - completed
 
+permissions:
+  actions: read
+  contents: read
+  checks: write
+
 jobs:
   collect-logs:
     runs-on: ubuntu-latest
@@ -33,7 +38,7 @@ jobs:
 
       - name: Upload logs and analyze
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           REPO_OWNER: ${{ github.repository_owner }}
           REPO_NAME: ${{ github.event.repository.name }}
@@ -56,24 +61,57 @@ jobs:
           name: analysis-summary
           path: ./scripts/*_analysis_*.txt
 
+      - name: Create annotations
+        uses: atlassian/gajira-create@v1.1.2
+        with:
+          summary: "Log Analysis"
+          description: "Analysis summary of logs"
+        env:
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_SITE: ${{ secrets.JIRA_SITE }}
+          JIRA_PROJECT: ${{ secrets.JIRA_PROJECT }}
+
       - name: Create GitHub issue with analysis summary
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
           script: |
             const fs = require('fs');
-            const files = fs.readdirSync('./scripts').filter(file => file.endsWith('_analysis_*.txt'));
+            const files = fs.readdirSync('./scripts').filter(file => file.includes('_analysis_'));
             let body = '## Analysis summary of logs\n';
             for (const file of files) {
               const content = fs.readFileSync(`./scripts/${file}`, 'utf8');
               body += `### ${file}\n\`\`\`\n${content}\n\`\`\`\n`;
             }
-            github.issues.create({
+            await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: 'Log Analysis Summary',
               body: body
             });
+
+      - name: Check API rate limits
+        env:
+          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+        run: |
+          rate_limit_response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/rate_limit)
+          echo "Rate Limit Response: $rate_limit_response"
+
+      - name: Verify token permissions
+        env:
+          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+        run: |
+          curl -H "Authorization: token $GITHUB_TOKEN" \
+               -H "Accept: application/vnd.github.v3+json" \
+               https://api.github.com/user
+
+      - name: Check token value
+        env:
+          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+        run: echo $GITHUB_TOKEN
 
 
 
