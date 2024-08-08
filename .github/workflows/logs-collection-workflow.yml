@@ -98,6 +98,15 @@ jobs:
 
           echo "Check Run Response: $check_run_response"
 
+          # Verify the annotations were added correctly
+          annotations_url=$(echo "$check_run_response" | jq -r .output.annotations_url)
+          annotations_response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          "$annotations_url")
+
+          echo "Annotations Response: $annotations_response"
+
+
 
 
 
