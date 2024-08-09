@@ -52,43 +52,46 @@ jobs:
       - name: List files after analysis
         run: ls -la scripts/
 
-      - name: List analysis files
-        run: | 
-          ls -la ./scripts/*_analysis_*.txt
-
-          - name: Display analyzed logs summary as summary
-          run: |
-            echo "## Analysis summary of logs" >> $GITHUB_STEP_SUMMARY
-            for file in ./scripts/*_analysis_*.txt; do
-              if [ -f "$file" ]; then
-                echo "### $(basename $file)" >> $GITHUB_STEP_SUMMARY
-                echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-                cat $file >> $GITHUB_STEP_SUMMARY
-                echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-              fi
-            done
-
-      - name: Check API rate limits
-        env:
-          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+      - name: Display analysis summary as GitHub Actions summary
         run: |
-          rate_limit_response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/rate_limit)
-          echo "Rate Limit Response: $rate_limit_response"
+          echo "## Analysis Summary" >> $GITHUB_STEP_SUMMARY
+          for file in ./scripts/*_analysis_*.txt; do
+            if [ -f "$file" ]; then
+              echo "### Summary of $file" >> $GITHUB_STEP_SUMMARY
+              cat "$file" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY  # Add a blank line for better readability
+            else
+              echo "No analysis files found." >> $GITHUB_STEP_SUMMARY
+            fi
+          done
 
-      - name: Verify token permissions
-        env:
-          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
-        run: |
-          curl -H "Authorization: token $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/user
+      - name: Display summary
+        run: cat $GITHUB_STEP_SUMMARY
 
-      - name: Check token value
-        env:
-          GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
-        run: echo $GITHUB_TOKEN
+      # - name: Check API rate limits
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+      #   run: |
+      #     rate_limit_response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+      #     -H "Accept: application/vnd.github.v3+json" \
+      #     https://api.github.com/rate_limit)
+      #     echo "Rate Limit Response: $rate_limit_response"
+
+      # - name: Verify token permissions
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+      #   run: |
+      #     curl -H "Authorization: token $GITHUB_TOKEN" \
+      #          -H "Accept: application/vnd.github.v3+json" \
+      #          https://api.github.com/user
+
+      # - name: Check token value
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
+      #   run: echo $GITHUB_TOKEN
+
+
+
 
 
 
