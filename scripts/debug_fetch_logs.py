@@ -3,11 +3,6 @@ import sys
 import requests
 from datetime import datetime
 
-def read_run_id(run_id_file):
-    with open(run_id_file, 'r') as file:
-        run_id = file.read().strip()
-    return run_id
-
 def get_failed_steps(owner, repo, run_id, headers):
     url = f"https://api.github.com/repos/{owner}/{repo}/actions/runs/{run_id}/jobs"
     response = requests.get(url, headers=headers)
@@ -76,9 +71,8 @@ def analyze_logs_with_custom_service(log_filename):
     
     return analysis_result
 
-def main(run_id_file):
-    run_id = read_run_id(run_id_file)
-
+def main():
+    run_id = os.getenv('GITHUB_RUN_ID')
     repo_owner = os.getenv('REPO_OWNER')
     repo_name = os.getenv('REPO_NAME')
     token = os.getenv('GITHUB_TOKEN')
@@ -130,10 +124,8 @@ def main(run_id_file):
             print(f"Failed to analyze logs for {log_filename}: {str(e)}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python debug_fetch_logs.py <run_id_file>")
-        sys.exit(1)
-    main(sys.argv[1])
+    main()
+
 
 
 
