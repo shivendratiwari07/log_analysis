@@ -53,7 +53,7 @@ jobs:
         run: ls -la scripts/
 
       - name: List analysis files
-        run: |
+        run: | 
           ls -la ./scripts/*_analysis_*.txt
 
       - name: Upload analysis summary as artifact
@@ -62,24 +62,15 @@ jobs:
           name: analysis-summary
           path: ./scripts/*_analysis_*.txt
 
-      - name: Create annotations as issue comments
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const files = fs.readdirSync('./scripts').filter(file => file.includes('_analysis_'));
-            let body = '## Analysis summary of logs\n';
-            for (const file of files) {
-              const content = fs.readFileSync(`./scripts/${file}`, 'utf8');
-              body += `### ${file}\n\`\`\`\n${content}\n\`\`\`\n`;
-            }
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: body
-            });
+      - name: Display analyzed logs summary as summary
+        run: |
+          echo "## Analysis summary of logs" >> $GITHUB_STEP_SUMMARY
+          for file in ./scripts/*_analysis_*.txt; do
+            echo "### $(basename $file)" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            cat $file >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          done
 
       - name: Check API rate limits
         env:
@@ -95,8 +86,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
         run: |
           curl -H "Authorization: token $GITHUB_TOKEN" \
-               -H "Accept: application/vnd.github.v3+json" \
-               https://api.github.com/user
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/user
 
       - name: Check token value
         env:
