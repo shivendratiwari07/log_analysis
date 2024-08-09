@@ -16,9 +16,6 @@ jobs:
   collect-logs:
     runs-on: ubuntu-latest
 
-    outputs:
-      analysis-summary: ${{ steps.generate-summary.outputs.summary }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -55,24 +52,21 @@ jobs:
       - name: List files after analysis
         run: ls -la scripts/
 
-      - name: Generate analysis summary
-        id: generate-summary
+      - name: Display analysis summary as GitHub Actions summary
         run: |
-          summary="## Analysis Summary\n"
+          echo "## Analysis Summary" >> $GITHUB_STEP_SUMMARY
           for file in ./scripts/*_analysis_*.txt; do
             if [ -f "$file" ]; then
-              summary+="### Summary of $file\n"
-              summary+=$(cat "$file")
-              summary+="\n\n"
+              echo "### Summary of $file" >> $GITHUB_STEP_SUMMARY
+              cat "$file" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY  # Add a blank line for better readability
             else
-              summary+="No analysis files found.\n"
+              echo "No analysis files found." >> $GITHUB_STEP_SUMMARY
             fi
           done
-          echo "::set-output name=summary::$summary"
 
       - name: Display summary
-        run: echo "${{ steps.generate-summary.outputs.summary }}"
-
+        run: cat $GITHUB_STEP_SUMMARY
 
       # - name: Check API rate limits
       #   env:
