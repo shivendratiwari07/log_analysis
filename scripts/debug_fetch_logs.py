@@ -1,7 +1,6 @@
 import os
 import sys
 import requests
-from azure.storage.blob import BlobServiceClient
 from datetime import datetime
 
 def read_run_id(run_id_file):
@@ -42,21 +41,6 @@ def download_logs(logs_url, headers, output_filename):
     print(f"Logs downloaded successfully to {output_filename}.")
     return True
 
-def upload_logs_to_azure(blob_service_client, container_name, blob_name, file_path):
-    print(f"Starting upload to Azure Blob Storage: {file_path} as {blob_name}")
-    try:
-        blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
-        with open(file_path, 'rb') as log_file:
-            blob_client.upload_blob(log_file, overwrite=False)  # Ensure file is not overwritten
-        
-        print(f"File uploaded successfully to {blob_name}.")
-        blob_url = blob_client.url
-        print(f"Blob URL: {blob_url}")
-        return blob_url
-    except Exception as e:
-        print(f"Failed to upload file: {str(e)}")
-    return None
-
 def analyze_logs_with_custom_service(log_filename):
     url = "https://www.dex.inside.philips.com/philips-ai-chat/chat/api/user/SendImageMessage"
     headers = {
@@ -84,18 +68,9 @@ def analyze_logs_with_custom_service(log_filename):
     response.raise_for_status()
     return response.json()
 
-def list_blob_containers(blob_service_client):
-    print("Listing Blob Containers:")
-    containers = blob_service_client.list_containers()
-    for container in containers:
-        print(f"Container Name: {container['name']}")
-
 def main(run_id_file):
     run_id = read_run_id(run_id_file)
 
-    account_name = "githubactions02"
-    account_key = os.getenv('AZURE_STORAGE_KEY')
-    container_name = "actionslogs"
     repo_owner = os.getenv('REPO_OWNER')
     repo_name = os.getenv('REPO_NAME')
     token = os.getenv('GITHUB_TOKEN')
@@ -114,15 +89,6 @@ def main(run_id_file):
         print("No failed steps found.")
         return
 
-    try:
-        connection_string = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
-        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-        print("Connected to Azure Blob Storage")
-        list_blob_containers(blob_service_client)  # List all blob containers
-    except Exception as e:
-        print(f"Failed to connect to Azure Blob Storage: {str(e)}")
-        return
-
     for step in failed_steps:
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         log_filename = f"{step['job_name']}_{step['step_name']}_logs_{timestamp}.txt"
@@ -130,35 +96,18 @@ def main(run_id_file):
             print(f"Failed to download logs for {step['job_name']} - {step['step_name']}")
             continue
 
-        blob_name = f'github_actions_logs_{run_id}_{step["job_name"]}_{step["step_name"]}_{timestamp}.txt'
-        log_blob_url = upload_logs_to_azure(blob_service_client, container_name, blob_name, log_filename)
-        if not log_blob_url:
-            print(f"Failed to upload logs for {step['job_name']} - {step['step_name']}")
-            continue
-
         print(f"Analyzing log file: {log_filename}")
         try:
             analysis_result = analyze_logs_with_custom_service(log_filename)
             summary = analysis_result.get('choices', [{}])[0].get('message', {}).get('content', 'No summary available')
 
-            # Save the analysis summary to a unique file
-            analysis_filename = f"./scripts/{step['job_name']}_{step['step_name']}_analysis_{timestamp}.txt"
-            with open(analysis_filename, 'w') as analysis_file:
-                analysis_file.write(summary)
-            
-            print(f"Analysis saved to {analysis_filename}")
+            # Display the analysis summary directly in the GitHub Actions log
             print("Analysis summary:")
             print(summary)
+            
+            # Optionally, create GitHub Actions annotations for the analysis summary
+            print(f"::warning file={log_filename},line=1,col=1::{summary}")
 
-            blob_name = f'github_actions_analysis_{run_id}_{step["job_name"]}_{step["step_name"]}_{timestamp}.txt'
-            analysis_blob_url = upload_logs_to_azure(blob_service_client, container_name, blob_name, analysis_filename)
-            if analysis_blob_url:
-                print(f"Analysis Blob URL: {analysis_blob_url}")
-                
-                # Create GitHub Actions annotations for the analysis summary
-                print(f"::warning file={analysis_filename},line=1,col=1::{summary}")
-            else:
-                print(f"Failed to upload analysis for {log_filename}")
         except Exception as e:
             print(f"Failed to analyze logs for {log_filename}: {str(e)}")
 
@@ -167,6 +116,7 @@ if __name__ == "__main__":
         print("Usage: python debug_fetch_logs.py <run_id_file>")
         sys.exit(1)
     main(sys.argv[1])
+
 
 
 
