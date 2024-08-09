@@ -20,12 +20,6 @@ jobs:
       main_ci_run_id: ${{ steps.save-run-id.outputs.run_id }}
 
     steps:
-      - name: Verify environment variables
-        run: |
-          echo "GITHUB_RUN_ID=${{ env.GITHUB_RUN_ID }}"
-          echo "GITHUB_TOKEN=${{ secrets.FULL_ACCESS_DH_TOKEN }}"
-          echo "REPO_OWNER=${{ github.repository_owner }}"
-          echo "REPO_NAME=${{ github.event.repository.name }}"
       - name: Checkout repository
         uses: actions/checkout@v2
 
@@ -34,15 +28,19 @@ jobs:
         with:
           python-version: '3.12'
 
-      # - name: Install dependencies
-      #   run: |
-      #     python -m venv myenv
-      #     source myenv/bin/activate
-      #     pp install requests
+      # Print the run_id before saving it as an output
+      - name: Print GITHUB_RUN_ID before saving
+        run: echo "GITHUB_RUN_ID before saving as output: ${{ github.run_id }}"
 
+      # Save the run_id as an output
       - name: Save GITHUB_RUN_ID to output
         id: save-run-id
-        run: echo "::set-output name=run_id::${{ github.run_id }}"
+        run: |
+          echo "::set-output name=run_id::${{ github.run_id }}"
+
+      # Print the run_id after saving it as an output
+      - name: Print GITHUB_RUN_ID after saving
+        run: echo "GITHUB_RUN_ID after saving as output: ${{ steps.save-run-id.outputs.run_id }}"
 
       - name: List files in workspace (before commit)
         run: ls -la
@@ -57,6 +55,7 @@ jobs:
         run: |
           source myenv/bin/activate
           python openai.py
+
 
 
 

@@ -38,6 +38,9 @@ jobs:
           source myenv/bin/activate
           pip install requests jq
 
+      - name: Print the GITHUB_RUN_ID
+        run: echo "GITHUB_RUN_ID from Main CI Workflow: ${GITHUB_RUN_ID}"
+
       - name: Verify environment variables
         run: |
           echo "GITHUB_RUN_ID=${GITHUB_RUN_ID}"
@@ -68,6 +71,7 @@ jobs:
 
       - name: Display summary
         run: cat $GITHUB_STEP_SUMMARY
+
 
 
 
