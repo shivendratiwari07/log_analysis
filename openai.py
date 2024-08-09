@@ -25,7 +25,7 @@ payload = {
 }
 
 # Make the POST request
-response = requests.post(url, json=payload, headers=headers)
+response = requests.post(rl, json=payload, headers=headers)
 
 # Print the response
 print(response.status_code)

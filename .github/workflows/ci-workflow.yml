@@ -49,7 +49,7 @@ jobs:
         run: |
           python -m venv myenv
           source myenv/bin/activate
-          pi install requests
+          pip install requests
 
       - name: Run openai.py script
         run: |
