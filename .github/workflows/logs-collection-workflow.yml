@@ -62,10 +62,15 @@ jobs:
           name: analysis-summary
           path: ./scripts/*_analysis_*.txt
 
+      - name: Download analysis summary artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: analysis-summary
+
       - name: Display analyzed logs summary as summary
         run: |
           echo "## Analysis summary of logs" >> $GITHUB_STEP_SUMMARY
-          for file in ./scripts/*_analysis_*.txt; do
+          for file in analysis-summary/*_analysis_*.txt; do
             echo "### $(basename $file)" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
             cat $file >> $GITHUB_STEP_SUMMARY
