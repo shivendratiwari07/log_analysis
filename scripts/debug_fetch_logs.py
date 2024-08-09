@@ -77,6 +77,12 @@ def main():
     repo_name = os.getenv('REPO_NAME')
     token = os.getenv('GITHUB_TOKEN')
 
+    # Debugging statements to check environment variable values
+    print(f"GITHUB_RUN_ID: {run_id}")
+    print(f"REPO_OWNER: {repo_owner}")
+    print(f"REPO_NAME: {repo_name}")
+    print(f"GITHUB_TOKEN: {token}")
+
     if not all([repo_owner, repo_name, run_id, token]):
         raise Exception("REPO_OWNER, REPO_NAME, GITHUB_RUN_ID, and GITHUB_TOKEN must be set")
 

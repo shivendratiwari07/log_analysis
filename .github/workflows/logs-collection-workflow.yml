@@ -41,6 +41,13 @@ jobs:
         run: |
           echo "Environment variables set. GITHUB_RUN_ID=${{ github.event.workflow_run.id }}"
 
+      - name: Verify environment variables
+        run: |
+          echo "GITHUB_RUN_ID=${GITHUB_RUN_ID}"
+          echo "GITHUB_TOKEN=${GITHUB_TOKEN}"
+          echo "REPO_OWNER=${REPO_OWNER}"
+          echo "REPO_NAME=${REPO_NAME}"
+
       - name: Upload logs and analyze
         run: |
           source myenv/bin/activate
@@ -64,6 +71,7 @@ jobs:
 
       - name: Display summary
         run: cat $GITHUB_STEP_SUMMARY
+
 
 
       # - name: Check API rate limits
