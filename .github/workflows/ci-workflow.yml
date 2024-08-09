@@ -38,7 +38,7 @@ jobs:
         id: save-run-id
         run: |
           echo "run_id=${{ github.run_id }}" >> $GITHUB_ENV
-          echo "::set-output name=run_id::${{ github.run_id }}"
+          echo "::set-output name=run_id::${{ github.run_id }}"  # Deprecated but still included for compatibility
 
       # Print the run_id after saving it as an output
       - name: Print GITHUB_RUN_ID after saving
@@ -58,6 +58,7 @@ jobs:
         run: |
           source myenv/bin/activate
           python openai.py
+
 
 
 

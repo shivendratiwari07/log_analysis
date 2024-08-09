@@ -16,14 +16,10 @@ jobs:
   collect-logs:
     runs-on: ubuntu-latest
 
-    env:
-      GITHUB_RUN_ID: ${{ github.event.workflow_run.outputs.run_id }}
-      GITHUB_TOKEN: ${{ secrets.FULL_ACCESS_DH_TOKEN }}
-      REPO_OWNER: ${{ github.repository_owner }}
-      REPO_NAME: ${{ github.event.repository.name }}
-      CUSTOM_SERVICE_COOKIE: ${{ secrets.CUSTOM_SERVICE_COOKIE }}
-
     steps:
+      - name: Set environment variable from previous job output
+        run: echo "GITHUB_RUN_ID=${{ github.event.workflow_run.conclusion }}"
+
       - name: Checkout repository
         uses: actions/checkout@v2
 
@@ -72,6 +68,7 @@ jobs:
 
       - name: Display summary
         run: cat $GITHUB_STEP_SUMMARY
+
 
 
 
