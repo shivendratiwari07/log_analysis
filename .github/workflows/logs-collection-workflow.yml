@@ -59,14 +59,14 @@ jobs:
       - name: Display analyzed logs summary as summary
         run: |
           echo "## Analysis summary of logs" >> $GITHUB_STEP_SUMMARY
+          echo "Listing files in ./scripts directory for debugging:" >> $GITHUB_STEP_SUMMARY
+          ls -la ./scripts >> $GITHUB_STEP_SUMMARY
           for file in ./scripts/*_analysis_*.txt; do
             if [ -f "$file" ]; then
               echo "### $(basename $file)" >> $GITHUB_STEP_SUMMARY
               echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
               cat $file >> $GITHUB_STEP_SUMMARY
               echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "No analysis files found in ./scripts/" >> $GITHUB_STEP_SUMMARY
             fi
           done
 
