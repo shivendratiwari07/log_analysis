@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      main_ci_run_id: ${{ steps.save-run-id.outputs.run_id }}
+      main_ci_run_id: ${{ steps.save-run-id.outputs.main_ci_run_id }}
 
     steps:
       - name: Checkout repository
@@ -33,15 +33,16 @@ jobs:
         run: |
           echo "GITHUB_RUN_ID before saving as output: ${{ github.run_id }}"
 
-      # Save the run_id as an output
+      # Save the run_id as an output using environment file
       - name: Save GITHUB_RUN_ID to output
         id: save-run-id
-        run: echo "::set-output name=run_id::${{ github.run_id }}"
+        run: |
+          echo "main_ci_run_id=${{ github.run_id }}" >> $GITHUB_ENV
 
       # Print the run_id after saving it as an output
       - name: Print GITHUB_RUN_ID after saving
         run: |
-          echo "GITHUB_RUN_ID after saving as output: ${{ steps.save-run-id.outputs.run_id }}"
+          echo "GITHUB_RUN_ID after saving as output: ${{ steps.save-run-id.outputs.main_ci_run_id }}"
 
       - name: List files in workspace (before commit)
         run: ls -la
@@ -56,6 +57,7 @@ jobs:
         run: |
           source myenv/bin/activate
           python openai.py
+
 
 
 
