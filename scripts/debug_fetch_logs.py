@@ -14,6 +14,7 @@ def get_failed_steps(owner, repo, run_id, headers):
     response.raise_for_status()
     
     jobs = response.json()["jobs"]
+    print(f"Retrieved jobs: {jobs}")  # Debugging statement
     failed_steps = []
     
     for job in jobs:
@@ -26,6 +27,7 @@ def get_failed_steps(owner, repo, run_id, headers):
                     "job_logs_url": job_logs_url
                 })
     
+    print(f"Failed steps: {failed_steps}")  # Debugging statement
     return failed_steps
 
 def download_logs(logs_url, headers, output_filename):
@@ -33,6 +35,7 @@ def download_logs(logs_url, headers, output_filename):
     response.raise_for_status()
     
     if not response.content:
+        print("Received empty content from GitHub API.")  # Debugging statement
         raise Exception("Received empty content from GitHub API.")
     
     with open(output_filename, 'wb') as file:
@@ -66,7 +69,12 @@ def analyze_logs_with_custom_service(log_filename):
     
     response = requests.post(url, json=payload, headers=headers)
     response.raise_for_status()
-    return response.json()
+    
+    # Debugging statement
+    analysis_result = response.json()
+    print(f"Analysis result: {analysis_result}")
+    
+    return analysis_result
 
 def main(run_id_file):
     run_id = read_run_id(run_id_file)
@@ -101,12 +109,22 @@ def main(run_id_file):
             analysis_result = analyze_logs_with_custom_service(log_filename)
             summary = analysis_result.get('choices', [{}])[0].get('message', {}).get('content', 'No summary available')
 
+            # Check if the summary is being generated correctly
+            print(f"Generated Summary: {summary}")
+
+            # Save the analysis summary to a unique file
+            analysis_filename = f"./scripts/{step['job_name']}_{step['step_name']}_analysis_{timestamp}.txt"
+            with open(analysis_filename, 'w') as analysis_file:
+                analysis_file.write(summary)
+            
+            print(f"Analysis saved to {analysis_filename}")
+
             # Display the analysis summary directly in the GitHub Actions log
             print("Analysis summary:")
             print(summary)
             
             # Optionally, create GitHub Actions annotations for the analysis summary
-            print(f"::warning file={log_filename},line=1,col=1::{summary}")
+            print(f"::warning file={analysis_filename},line=1,col=1::{summary}")
 
         except Exception as e:
             print(f"Failed to analyze logs for {log_filename}: {str(e)}")
@@ -116,6 +134,7 @@ if __name__ == "__main__":
         print("Usage: python debug_fetch_logs.py <run_id_file>")
         sys.exit(1)
     main(sys.argv[1])
+
 
 
 
